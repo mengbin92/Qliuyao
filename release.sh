@@ -3,7 +3,7 @@
 #
 # 你只需要改下面两行 ↓↓↓
 #
-GITHUB_USER="你的GitHub用户名"      # ← 改成你的，例如 "ronggang"
+GITHUB_USER="Keith9922"      # ← 改成你的，例如 "ronggang"
 REPO_NAME="quantum-liuyao"         # ← 仓库名，可保留默认或改
 #
 # 然后：
