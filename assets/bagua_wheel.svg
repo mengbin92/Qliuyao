@@ -1,0 +1,76 @@
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bagua wheel">
+  <defs>
+    <radialGradient id="bg2" cx="50%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#1a0d33"/>
+      <stop offset="100%" stop-color="#000"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg2)"/>
+
+  <!-- 外圈 -->
+  <circle cx="200" cy="200" r="170" stroke="#d4a017" stroke-width="1" fill="none" opacity="0.6"/>
+  <circle cx="200" cy="200" r="135" stroke="#d4a017" stroke-width="0.5" fill="none" opacity="0.3"/>
+  <circle cx="200" cy="200" r="60" stroke="#d4a017" stroke-width="1" fill="none" opacity="0.6"/>
+
+  <!-- 太极图（中央） -->
+  <g transform="translate(200,200)">
+    <circle r="50" fill="#fffce0" opacity="0.95"/>
+    <path d="M 0,-50 A 25,25 0 0 1 0,0 A 25,25 0 0 0 0,50 A 50,50 0 0 1 0,-50 Z" fill="#0a0a0a"/>
+    <circle cx="0" cy="-25" r="6" fill="#0a0a0a"/>
+    <circle cx="0" cy="25" r="6" fill="#fffce0"/>
+  </g>
+
+  <!-- 八卦（先天八卦次序排列：乾兑离震巽坎艮坤）-->
+  <!-- 上：乾 ☰ -->
+  <g transform="translate(200,55)" font-family="serif" text-anchor="middle">
+    <text y="0" font-size="32" fill="#ffd966">☰</text>
+    <text y="22" font-size="13" fill="#fff5cc">乾</text>
+  </g>
+  <!-- 右上：兑 ☱ -->
+  <g transform="translate(305,100)" font-family="serif" text-anchor="middle">
+    <text y="0" font-size="32" fill="#ffd966">☱</text>
+    <text y="22" font-size="13" fill="#fff5cc">兑</text>
+  </g>
+  <!-- 右：离 ☲ -->
+  <g transform="translate(345,205)" font-family="serif" text-anchor="middle">
+    <text y="0" font-size="32" fill="#ffd966">☲</text>
+    <text y="22" font-size="13" fill="#fff5cc">离</text>
+  </g>
+  <!-- 右下：震 ☳ -->
+  <g transform="translate(305,310)" font-family="serif" text-anchor="middle">
+    <text y="0" font-size="32" fill="#ffd966">☳</text>
+    <text y="22" font-size="13" fill="#fff5cc">震</text>
+  </g>
+  <!-- 下：坤 ☷ -->
+  <g transform="translate(200,355)" font-family="serif" text-anchor="middle">
+    <text y="0" font-size="32" fill="#ffd966">☷</text>
+    <text y="22" font-size="13" fill="#fff5cc">坤</text>
+  </g>
+  <!-- 左下：艮 ☶ -->
+  <g transform="translate(95,310)" font-family="serif" text-anchor="middle">
+    <text y="0" font-size="32" fill="#ffd966">☶</text>
+    <text y="22" font-size="13" fill="#fff5cc">艮</text>
+  </g>
+  <!-- 左：坎 ☵ -->
+  <g transform="translate(55,205)" font-family="serif" text-anchor="middle">
+    <text y="0" font-size="32" fill="#ffd966">☵</text>
+    <text y="22" font-size="13" fill="#fff5cc">坎</text>
+  </g>
+  <!-- 左上：巽 ☴ -->
+  <g transform="translate(95,100)" font-family="serif" text-anchor="middle">
+    <text y="0" font-size="32" fill="#ffd966">☴</text>
+    <text y="22" font-size="13" fill="#fff5cc">巽</text>
+  </g>
+
+  <!-- 二进制对照（莱布尼茨惊讶处） -->
+  <g font-family="monospace" fill="#a674ff" opacity="0.7" font-size="11">
+    <text x="200" y="78" text-anchor="middle">111</text>
+    <text x="305" y="123" text-anchor="middle">110</text>
+    <text x="345" y="228" text-anchor="middle">101</text>
+    <text x="305" y="333" text-anchor="middle">100</text>
+    <text x="200" y="378" text-anchor="middle">000</text>
+    <text x="95" y="333" text-anchor="middle">001</text>
+    <text x="55" y="228" text-anchor="middle">010</text>
+    <text x="95" y="123" text-anchor="middle">011</text>
+  </g>
+</svg>

@@ -1,0 +1,82 @@
+<svg viewBox="0 0 1000 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Quantum Liuyao Banner">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="50%" r="80%">
+      <stop offset="0%" stop-color="#2a0d4a"/>
+      <stop offset="60%" stop-color="#0f0428"/>
+      <stop offset="100%" stop-color="#000"/>
+    </radialGradient>
+    <linearGradient id="title" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffd966"/>
+      <stop offset="50%" stop-color="#fff5cc"/>
+      <stop offset="100%" stop-color="#ffd966"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1000" height="280" fill="url(#bg)"/>
+
+  <!-- 散落的星点 -->
+  <g fill="#fff" opacity="0.4">
+    <circle cx="80" cy="40" r="1"/>
+    <circle cx="160" cy="220" r="1.5"/>
+    <circle cx="930" cy="60" r="1"/>
+    <circle cx="850" cy="240" r="1.2"/>
+    <circle cx="450" cy="30" r="1"/>
+    <circle cx="600" cy="250" r="1.3"/>
+    <circle cx="280" cy="60" r="0.8"/>
+    <circle cx="780" cy="200" r="1"/>
+  </g>
+
+  <!-- 左侧八卦符号 -->
+  <g font-family="serif" fill="#d4a017" opacity="0.55">
+    <text x="55" y="80" font-size="38">☰</text>
+    <text x="55" y="160" font-size="38">☷</text>
+    <text x="55" y="240" font-size="38">☵</text>
+  </g>
+  <!-- 右侧八卦符号 -->
+  <g font-family="serif" fill="#d4a017" opacity="0.55">
+    <text x="910" y="80" font-size="38">☲</text>
+    <text x="910" y="160" font-size="38">☳</text>
+    <text x="910" y="240" font-size="38">☶</text>
+  </g>
+
+  <!-- 量子比特装饰 -->
+  <g font-family="monospace" fill="#a674ff" opacity="0.7" font-size="14">
+    <text x="120" y="50">|0⟩</text>
+    <text x="155" y="50">+</text>
+    <text x="175" y="50">|1⟩</text>
+    <text x="800" y="50">|0⟩</text>
+    <text x="835" y="50">+</text>
+    <text x="855" y="50">|1⟩</text>
+  </g>
+
+  <!-- 主标题 -->
+  <text x="500" y="115" font-family="serif" font-size="72" font-weight="bold"
+        fill="url(#title)" text-anchor="middle" filter="url(#glow)" letter-spacing="8">
+    量子六爻
+  </text>
+  <text x="500" y="155" font-family="serif" font-size="22" fill="#bba6ff"
+        text-anchor="middle" letter-spacing="14">
+    Q U A N T U M   L I U Y A O
+  </text>
+
+  <!-- 中部分隔线 -->
+  <line x1="350" y1="180" x2="650" y2="180" stroke="#665599" stroke-width="0.5"/>
+
+  <!-- 标语 -->
+  <text x="500" y="210" font-family="serif" font-size="20" fill="#ffe9c4"
+        text-anchor="middle" font-style="italic">
+    "测量之前，卦既是吉，也是凶。"
+  </text>
+  <text x="500" y="240" font-family="monospace" font-size="13" fill="#9988cc"
+        text-anchor="middle">
+    H ⊗ H ⊗ H  →  measurement  →  ⚊ or ⚋
+  </text>
+  <text x="500" y="262" font-family="serif" font-size="11" fill="#776699"
+        text-anchor="middle" letter-spacing="2">
+    把铜钱换成量子比特  ·  让 AI 替你解卦
+  </text>
+</svg>

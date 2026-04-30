@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE / 系统
+.idea/
+.vscode/
+.DS_Store
+
+# 虚拟环境（如果用 venv 而不是 conda）
+.venv/
+venv/
+
+# 注意：本项目自带一个共享的 .env 文件（含演示用 API key），
+# 已"故意"不加入 .gitignore，让接收者开箱即用。
+# 如果你 fork 后要用自己的 key，建议把下行解开：
+# .env
