@@ -87,9 +87,30 @@ export async function POST(req: Request) {
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
   const reader = upstream.body.getReader();
+  let heartbeat: ReturnType<typeof setInterval> | undefined;
+
+  const stopHeartbeat = () => {
+    if (heartbeat !== undefined) {
+      clearInterval(heartbeat);
+      heartbeat = undefined;
+    }
+  };
 
   const stream = new ReadableStream({
     async start(controller) {
+      // Some reverse proxies close a proxy response if no bytes are received
+      // within roughly 30 seconds. Emit an SSE comment as a heartbeat while
+      // waiting for the first upstream model token.
+      let firstToken = true;
+      heartbeat = setInterval(() => {
+        if (!firstToken) return;
+        try {
+          controller.enqueue(encoder.encode(": waiting for model\n\n"));
+        } catch {
+          // Stream already closed.
+        }
+      }, 15_000);
+
       let buffer = "";
       const send = (obj: unknown) =>
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`));
@@ -117,6 +138,8 @@ export async function POST(req: Request) {
               };
               const delta = parsed.choices?.[0]?.delta?.content;
               if (typeof delta === "string" && delta.length > 0) {
+                firstToken = false;
+                stopHeartbeat();
                 send({ text: delta });
               }
             } catch {
@@ -124,9 +147,11 @@ export async function POST(req: Request) {
             }
           }
         }
+        stopHeartbeat();
         controller.enqueue(encoder.encode(`data: [DONE]\n\n`));
         controller.close();
       } catch (err) {
+        stopHeartbeat();
         send({ error: err instanceof Error ? err.message : "stream error" });
         controller.close();
       } finally {
@@ -138,6 +163,7 @@ export async function POST(req: Request) {
       }
     },
     cancel(reason) {
+      stopHeartbeat();
       // 客户端断开（如关闭页面）→ 关掉上游连接，避免继续烧 token
       upstreamCtrl.abort(reason);
       try {

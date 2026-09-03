@@ -1,0 +1,9 @@
+.git
+.env
+.env.*
+node_modules
+web/node_modules
+web/.next
+web/.env
+web/.env.*
+npm-debug.log*

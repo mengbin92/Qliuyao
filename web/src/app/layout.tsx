@@ -27,7 +27,7 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://qliuyao.vercel.app"),
+  metadataBase: new URL("https://qliuyao.mengbin.top"),
   title: {
     default: "量子六爻 · Quantum Liuyao",
     template: "%s · 量子六爻",

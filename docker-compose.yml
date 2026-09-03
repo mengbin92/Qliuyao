@@ -1,0 +1,19 @@
+name: qliuyao
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: qliuyao-web:latest
+    container_name: qliuyao-web
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      LLM_BASE_URL: http://host.docker.internal:8080/v1
+      LLM_MODEL: deepseek-v4-pro-0813
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "3002:3000"

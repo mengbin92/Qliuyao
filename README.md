@@ -12,7 +12,7 @@
 
 **把铜钱换成量子比特  ·  让 AI 替你解卦**
 
-[🌐 在线试用](https://qliuyao.vercel.app)  ·  [一分钟跑起来](#一分钟跑起来)  ·  [它在做什么](#它在做什么)  ·  [背后的故事](#背后的故事)  ·  [详细文档](#详细文档)
+[🌐 在线试用](https://qliuyao.mengbin.top)  ·  [一分钟跑起来](#一分钟跑起来)  ·  [它在做什么](#它在做什么)  ·  [背后的故事](#背后的故事)  ·  [详细文档](#详细文档)
 
 </div>
 
@@ -22,7 +22,7 @@
 
 不想装 conda？直接打开浏览器：
 
-> **[qliuyao.vercel.app](https://qliuyao.vercel.app)**
+> **[qliuyao.mengbin.top](https://qliuyao.mengbin.top)**
 
 网页版用 TypeScript 复刻了量子电路（数学等价于 pyqpanda3 H⊗H⊗H + 单 shot 测量），
 配合完整的 64 卦经文 + 彖传 + 大象传知识库 + AI 流式解卦。
@@ -436,7 +436,7 @@ DEEPSEEK_API_KEY=你的 key  # 变量名保留
 - [ ] **接真机**：pyqpanda3 的 `qcloud` 子模块支持把电路提交到本源云的悟源超导真机
 - [ ] **录小象传**：现在有彖传 + 大象传，没录每爻的小象（64 × 6 = 384 条）
 - [x] **流式 AI**：网页版已用 SSE 流式输出，体验接近 ChatGPT（见 `web/`）
-- [x] **Web 版**：Next.js + Vercel Edge 部署，[qliuyao.vercel.app](https://qliuyao.vercel.app)
+- [x] **Web 版**：Next.js + Vercel Edge 部署，[qliuyao.mengbin.top](https://qliuyao.mengbin.top)
 - [x] **可视化**：网页版有 SVG 量子电路图、概率柱状图、卡方检验交互
 - [x] **历史记录**：网页版用 localStorage 存最近 30 次卦签
 

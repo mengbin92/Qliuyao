@@ -119,3 +119,23 @@ Web 端用 `crypto.getRandomValues` 直接采样均匀整数 [0,8)。
 ## License
 
 MIT，跟主项目一致。
+
+## Docker Compose self-hosting
+
+The repository now includes a root-level production Dockerfile and Compose file for the web app.
+
+```bash
+cp web/.env.example .env
+# Set DEEPSEEK_API_KEY in .env.
+
+docker compose up -d --build
+```
+
+The default Compose file publishes the web app on host port `3002`. `LLM_BASE_URL` and `LLM_MODEL` can be overridden in the environment or `.env`; the bundled example targets an OpenAI-compatible service on the Docker host.
+
+```yaml
+extra_hosts:
+  - "host.docker.internal:host-gateway"
+```
+
+The Next.js app uses `output: "standalone"` and the `/api/interpret` stream emits SSE heartbeat comments while waiting for the model's first token, which avoids reverse-proxy idle timeouts.

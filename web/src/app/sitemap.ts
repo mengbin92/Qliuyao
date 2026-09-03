@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { listAllHexagrams } from "@/lib/hexagrams";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = "https://qliuyao.vercel.app";
+  const base = "https://qliuyao.mengbin.top";
   const now = new Date();
   const staticPages = ["", "/quantum", "/about", "/disclaimer", "/index-64"];
 
