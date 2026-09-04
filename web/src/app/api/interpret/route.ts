@@ -1,176 +1,134 @@
 import { SYSTEM_PROMPT, buildUserPrompt } from "@/lib/prompt";
-import type { Yao } from "@/lib/quantum";
+import { classifyYao, yaosToBinary } from "@/lib/quantum";
+import { readSSEData } from "@/lib/sse";
+import type { InterpretRequest } from "@/lib/types";
 
 export const runtime = "edge";
 
-const DEFAULT_BASE_URL = "https://api.deepseek.com/v1";
-const DEFAULT_MODEL = "deepseek-chat";
-
-interface InterpretRequest {
-  question: string;
-  yaos: Yao[];
-  benBin: string;
-  bianBin: string;
+function isInterpretRequest(value: unknown): value is InterpretRequest {
+  if (!value || typeof value !== "object") return false;
+  const body = value as Partial<InterpretRequest>;
+  if (typeof body.question !== "string" || !body.question.trim()) return false;
+  if (typeof body.benBin !== "string" || !/^[01]{6}$/.test(body.benBin)) return false;
+  if (typeof body.bianBin !== "string" || !/^[01]{6}$/.test(body.bianBin)) return false;
+  if (!Array.isArray(body.yaos) || body.yaos.length !== 6) return false;
+  if (!body.yaos.every((yao, index) => {
+    if (!yao || typeof yao.bitstring !== "string" || !/^[01]{3}$/.test(yao.bitstring)) return false;
+    const expected = classifyYao(parseInt(yao.bitstring, 2), index);
+    return yao.index === index && yao.ones === expected.ones && yao.name === expected.name &&
+      yao.isYang === expected.isYang && yao.isChanging === expected.isChanging;
+  })) return false;
+  const { ben, bian } = yaosToBinary(body.yaos);
+  return body.benBin === ben && body.bianBin === bian;
 }
 
-/**
- * POST /api/interpret
- *
- * 把 DeepSeek 的 SSE 输出转发给前端。
- * 关键点：
- *   - 客户端 abort 时通过 ReadableStream.cancel() 关掉上游连接，避免继续烧 token
- *   - 解析跨数据块的换行；只发送 `data: {"text":...}` 简化协议
- */
 export async function POST(req: Request) {
-  let body: InterpretRequest;
+  let body: unknown;
   try {
     body = await req.json();
   } catch {
-    return new Response(JSON.stringify({ error: "Bad JSON" }), { status: 400 });
+    return Response.json(
+      { error: req.signal.aborted ? "请求已取消" : "Bad JSON" },
+      { status: req.signal.aborted ? 499 : 400 }
+    );
   }
-
+  if (!isInterpretRequest(body)) return Response.json({ error: "Invalid request" }, { status: 400 });
   const { question, yaos, benBin, bianBin } = body;
-  if (!question?.trim() || !Array.isArray(yaos) || yaos.length !== 6) {
-    return new Response(JSON.stringify({ error: "Invalid request" }), { status: 400 });
-  }
-  if (question.length > 200) {
-    return new Response(JSON.stringify({ error: "问题过长（≤200 字）" }), { status: 400 });
-  }
+  if (question.length > 200) return Response.json({ error: "问题过长（≤200 字）" }, { status: 400 });
 
   const apiKey = process.env.DEEPSEEK_API_KEY || process.env.LLM_API_KEY;
   if (!apiKey) {
-    return new Response(
-      JSON.stringify({
-        error: "服务端未配置 DEEPSEEK_API_KEY。请联系管理员或自行部署。",
-      }),
-      { status: 503, headers: { "Content-Type": "application/json" } }
-    );
+    return Response.json({ error: "服务端未配置 DEEPSEEK_API_KEY。请联系管理员或自行部署。" }, { status: 503 });
   }
-
-  const baseUrl = (process.env.LLM_BASE_URL || DEFAULT_BASE_URL).replace(/\/$/, "");
-  const model = process.env.LLM_MODEL || DEFAULT_MODEL;
-  const userPrompt = buildUserPrompt(question, yaos, benBin, bianBin);
-
-  // 用一个 AbortController 让 cancel() 路径能传递到上游 fetch
+  const baseUrl = (process.env.LLM_BASE_URL || "https://api.deepseek.com/v1").replace(/\/$/, "");
+  const model = process.env.LLM_MODEL || "deepseek-chat";
   const upstreamCtrl = new AbortController();
+  const abortUpstream = () => upstreamCtrl.abort(req.signal.reason);
+  req.signal.addEventListener("abort", abortUpstream, { once: true });
+  if (req.signal.aborted) abortUpstream();
+  const cleanup = () => req.signal.removeEventListener("abort", abortUpstream);
 
-  const upstream = await fetch(`${baseUrl}/chat/completions`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: userPrompt },
-      ],
-      temperature: 0.6,
-      max_tokens: 3200,
-      stream: true,
-    }),
-    signal: upstreamCtrl.signal,
-  });
-
-  if (!upstream.ok || !upstream.body) {
-    const detail = await upstream.text().catch(() => "");
-    return new Response(
-      JSON.stringify({
-        error: `AI 接口返回 HTTP ${upstream.status}`,
-        detail: detail.slice(0, 500),
+  let upstream: Response;
+  try {
+    upstream = await fetch(`${baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: buildUserPrompt(question, yaos, benBin, bianBin) },
+        ],
+        temperature: 0.6,
+        max_tokens: 3200,
+        stream: true,
       }),
-      { status: 502, headers: { "Content-Type": "application/json" } }
-    );
+      signal: upstreamCtrl.signal,
+    });
+  } catch {
+    cleanup();
+    return Response.json({ error: "暂时无法连接 AI 服务，请稍后重试。" }, { status: req.signal.aborted ? 499 : 502 });
+  }
+  if (!upstream.ok || !upstream.body) {
+    upstreamCtrl.abort();
+    cleanup();
+    return Response.json({ error: `AI 接口返回 HTTP ${upstream.status}` }, { status: 502 });
   }
 
+  const upstreamBody = upstream.body;
   const encoder = new TextEncoder();
-  const decoder = new TextDecoder();
-  const reader = upstream.body.getReader();
   let heartbeat: ReturnType<typeof setInterval> | undefined;
-
+  let closed = false;
   const stopHeartbeat = () => {
-    if (heartbeat !== undefined) {
-      clearInterval(heartbeat);
-      heartbeat = undefined;
-    }
+    if (heartbeat !== undefined) clearInterval(heartbeat);
+    heartbeat = undefined;
   };
-
-  const stream = new ReadableStream({
+  const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
-      // Some reverse proxies close a proxy response if no bytes are received
-      // within roughly 30 seconds. Emit an SSE comment as a heartbeat while
-      // waiting for the first upstream model token.
-      let firstToken = true;
+      const send = (payload: string) => {
+        if (!closed) controller.enqueue(encoder.encode(`data: ${payload}\n\n`));
+      };
       heartbeat = setInterval(() => {
-        if (!firstToken) return;
-        try {
-          controller.enqueue(encoder.encode(": waiting for model\n\n"));
-        } catch {
-          // Stream already closed.
-        }
+        if (!closed) controller.enqueue(encoder.encode(": waiting for model\n\n"));
       }, 15_000);
-
-      let buffer = "";
-      const send = (obj: unknown) =>
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`));
-
       try {
-        for (;;) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split("\n");
-          buffer = lines.pop() ?? "";
-
-          for (const raw of lines) {
-            const line = raw.trim();
-            if (!line || !line.startsWith("data:")) continue;
-            const payload = line.slice(5).trim();
-            if (payload === "[DONE]") {
-              controller.enqueue(encoder.encode(`data: [DONE]\n\n`));
-              controller.close();
-              return;
-            }
-            try {
-              const parsed = JSON.parse(payload) as {
-                choices?: { delta?: { content?: string } }[];
-              };
-              const delta = parsed.choices?.[0]?.delta?.content;
-              if (typeof delta === "string" && delta.length > 0) {
-                firstToken = false;
-                stopHeartbeat();
-                send({ text: delta });
-              }
-            } catch {
-              // 个别上游片段不是合法 JSON，跳过即可
-            }
+        let completed = false;
+        for await (const payload of readSSEData(upstreamBody)) {
+          if (closed) return;
+          if (payload === "[DONE]") {
+            completed = true;
+            break;
+          }
+          const parsed = JSON.parse(payload) as {
+            error?: unknown;
+            choices?: { delta?: { content?: unknown } }[];
+          } | null;
+          if (parsed?.error) throw new Error("AI 服务返回错误，请重试。");
+          const delta = parsed?.choices?.[0]?.delta?.content;
+          if (typeof delta === "string" && delta.length > 0) {
+            stopHeartbeat();
+            send(JSON.stringify({ text: delta }));
           }
         }
-        stopHeartbeat();
-        controller.enqueue(encoder.encode(`data: [DONE]\n\n`));
-        controller.close();
-      } catch (err) {
-        stopHeartbeat();
-        send({ error: err instanceof Error ? err.message : "stream error" });
-        controller.close();
+        if (!completed) throw new Error("AI 连接提前结束，解读未完成，请重试。");
+        send("[DONE]");
+      } catch {
+        send(JSON.stringify({ error: "AI 解读连接中断或响应无效，请重试。" }));
       } finally {
-        try {
-          reader.releaseLock();
-        } catch {
-          /* already released */
+        stopHeartbeat();
+        upstreamCtrl.abort();
+        cleanup();
+        if (!closed) {
+          closed = true;
+          controller.close();
         }
       }
     },
-    cancel(reason) {
+    cancel() {
+      closed = true;
       stopHeartbeat();
-      // 客户端断开（如关闭页面）→ 关掉上游连接，避免继续烧 token
-      upstreamCtrl.abort(reason);
-      try {
-        reader.cancel(reason);
-      } catch {
-        /* already canceled */
-      }
+      upstreamCtrl.abort();
+      cleanup();
     },
   });
 

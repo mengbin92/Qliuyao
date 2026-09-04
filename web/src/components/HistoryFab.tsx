@@ -1,7 +1,9 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { usePathname } from "next/navigation";
 import { Scroll } from "./Icon";
 
 /**
@@ -17,18 +19,32 @@ const HistoryDrawer = dynamic(() => import("./HistoryDrawer").then((m) => m.Hist
 
 export function HistoryFab() {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const close = useCallback(() => {
+    setOpen(false);
+    requestAnimationFrame(() => triggerRef.current?.focus());
+  }, []);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
 
   return (
     <>
       <button
+        ref={triggerRef}
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-5 z-30 grid h-12 w-12 place-items-center rounded-full border border-gold-500/30 bg-ink-950/85 text-gold-200 shadow-glow-gold backdrop-blur transition hover:border-gold-300/60 md:bottom-10 md:right-8"
+        className="inline-flex h-11 shrink-0 items-center gap-2 rounded-full border border-gold-500/30 px-3 text-gold-200 transition hover:border-gold-300/60"
         aria-label="打开历史卦签"
+        aria-haspopup="dialog"
+        aria-expanded={open}
         type="button"
       >
         <Scroll size={20} />
+        <span className="text-xs">历史</span>
       </button>
-      {open && <HistoryDrawer open={open} onClose={() => setOpen(false)} />}
+      {open && createPortal(<HistoryDrawer open={open} onClose={close} />, document.body)}
     </>
   );
 }

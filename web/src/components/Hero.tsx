@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { Atom, Alert, Taiji, TaijiSeal } from "./Icon";
+import { cn } from "@/lib/utils";
 
 /**
  * 首页英雄区。克制路线：
@@ -12,20 +13,25 @@ import { Atom, Alert, Taiji, TaijiSeal } from "./Icon";
  *   - 没有粒子、没有罗盘、没有干涉条纹
  *   - 标题与 CTA 错峰浮入
  */
-export function Hero() {
+export function Hero({ compact = false }: { compact?: boolean }) {
   const reduce = useReducedMotion();
   return (
-    <header className="relative overflow-hidden pb-12 pt-14 md:pb-20 md:pt-24">
+    <header
+      className={cn(
+        "relative overflow-hidden",
+        compact ? "py-1 lg:py-8" : "pb-12 pt-14 md:pb-20 md:pt-24"
+      )}
+    >
       <Backdrop />
-      <div className="relative z-10 mx-auto max-w-6xl px-5">
-        <div className="flex flex-col items-center text-center">
+      <div className={cn("relative z-10", !compact && "mx-auto max-w-6xl px-5")}>
+        <div className={cn("flex flex-col", compact ? "items-start text-left" : "items-center text-center")}>
           <motion.div
             initial={reduce ? false : { scale: 0.92, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-            className="relative mb-8"
+            className={cn("relative", compact ? "mb-4 hidden lg:block" : "mb-8")}
           >
-            <Seal />
+            <Seal compact={compact} />
           </motion.div>
 
           <motion.p
@@ -41,10 +47,13 @@ export function Hero() {
             initial={reduce ? false : { y: 12, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.65 }}
-            className="mt-3 font-display text-5xl leading-[1.05] tracking-wide text-gold-100 md:text-7xl"
+            className={cn(
+              "mt-3 font-display leading-[1.05] tracking-wide text-gold-100",
+              compact ? "text-2xl leading-tight sm:text-3xl lg:text-5xl" : "text-5xl md:text-7xl"
+            )}
           >
             <span className="block">把铜钱换成<span className="text-quantum-gradient">量子比特</span></span>
-            <span className="mt-2 block text-3xl text-gold-200 md:mt-3 md:text-5xl">
+            <span className={cn("mt-2 block text-gold-200", compact ? "text-xl lg:text-3xl" : "text-3xl md:mt-3 md:text-5xl")}>
               让 AI 替你<span className="text-gold-gradient">解卦</span>
             </span>
           </motion.h1>
@@ -53,18 +62,22 @@ export function Hero() {
             initial={reduce ? false : { y: 12, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.65 }}
-            className="mx-auto mt-6 max-w-xl text-sm leading-relaxed text-ink-200 md:text-base"
+            className={cn(
+              "mt-4 max-w-xl text-sm leading-relaxed text-ink-200 md:text-base",
+              !compact && "mx-auto mt-6"
+            )}
           >
-            一个量子计算与《周易》的跨界实验。量子电路摇出六爻，
-            配合彖传 / 大象传 / 互错综 完整经学知识库，
-            AI 给你一段白话推演。
+            一个量子计算与《周易》的跨界实验。以六爻为起点，结合经典经文，获得一段白话解读。
           </motion.p>
 
           <motion.div
             initial={reduce ? false : { y: 12, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.78, duration: 0.65 }}
-            className="mt-7 flex flex-wrap items-center justify-center gap-2.5 text-[13px]"
+            className={cn(
+              "mt-5 flex flex-wrap gap-2.5 text-[13px]",
+              compact ? "hidden justify-start lg:flex" : "items-center justify-center"
+            )}
           >
             <Link href="/quantum" className="hero-chip hero-chip-quantum">
               <Atom size={14} />
@@ -88,9 +101,9 @@ export function Hero() {
 /**
  * 中央印章 —— 一层极淡的暖色辉光 + 太极图。无脉动、无旋转。
  */
-function Seal() {
+function Seal({ compact = false }: { compact?: boolean }) {
   return (
-    <div className="relative grid h-28 w-28 place-items-center md:h-32 md:w-32">
+    <div className={cn("relative grid place-items-center", compact ? "h-20 w-20 md:h-24 md:w-24" : "h-28 w-28 md:h-32 md:w-32")}>
       <span
         aria-hidden
         className="absolute -inset-6 rounded-full"
@@ -100,7 +113,7 @@ function Seal() {
         }}
       />
       <div className="relative grid h-full w-full place-items-center text-gold-200">
-        <TaijiSeal size={112} />
+        <TaijiSeal size={compact ? 84 : 112} />
       </div>
     </div>
   );

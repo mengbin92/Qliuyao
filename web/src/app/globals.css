@@ -225,10 +225,10 @@ body {
   background: rgb(255 69 58 / 0.2);
 }
 
-/* 小尺寸按钮：仍要 ≥40px 触控 */
+/* 小尺寸按钮：仍保留 44px 触控目标 */
 .btn-primary.btn-sm,
 .btn-ghost.btn-sm {
-  min-height: 40px;
+  min-height: 44px;
   padding: 8px 16px;
   font-size: 13px;
 }
@@ -269,6 +269,7 @@ body {
 
 /* reduced-motion 时禁用大部分动画 */
 @media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
@@ -298,6 +299,23 @@ body {
   .text-ink-100, .text-ink-200, .text-ink-300 {
     color: #333 !important;
   }
+  .result-summary {
+    display: grid !important;
+    position: static !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .result-details {
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+  .result-details > :not(summary) { display: block !important; }
+  .result-details::details-content { content-visibility: visible; }
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  dialog { display: none !important; }
 }
 
 /* 焦点可见的高对比环 */

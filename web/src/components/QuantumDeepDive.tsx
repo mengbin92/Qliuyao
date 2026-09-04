@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { castOneYao, classifyYao, type YaoName } from "@/lib/quantum";
 import { CircuitSVG } from "./CircuitSVG";
+import { useReducedMotion } from "framer-motion";
 
 /**
  * 量子电路科普组件：
@@ -25,15 +26,29 @@ type DemoResult = { bits: string; ones: number; name: YaoName };
 function CircuitDemo() {
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<DemoResult | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reduce = useReducedMotion();
 
-  const measure = async () => {
+  useEffect(() => () => {
+    if (timerRef.current !== null) clearTimeout(timerRef.current);
+  }, []);
+
+  const measure = () => {
     if (running) return;
     setRunning(true);
     setResult(null);
-    await new Promise((r) => setTimeout(r, 900));
-    const y = castOneYao(0);
-    setResult({ bits: y.bitstring, ones: y.ones, name: y.name });
-    setRunning(false);
+    if (reduce) {
+      const y = castOneYao(0);
+      setResult({ bits: y.bitstring, ones: y.ones, name: y.name });
+      setRunning(false);
+      return;
+    }
+    timerRef.current = setTimeout(() => {
+      const y = castOneYao(0);
+      setResult({ bits: y.bitstring, ones: y.ones, name: y.name });
+      setRunning(false);
+      timerRef.current = null;
+    }, 900);
   };
 
   return (
@@ -163,18 +178,27 @@ function BatchExperiment() {
   const [shots, setShots] = useState(1000);
   const [running, setRunning] = useState(false);
   const [counts, setCounts] = useState<number[] | null>(null);
+  const [sampleShots, setSampleShots] = useState<number | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    if (timerRef.current !== null) clearTimeout(timerRef.current);
+  }, []);
 
   const run = () => {
     setRunning(true);
-    setTimeout(() => {
+    const requestedShots = shots;
+    timerRef.current = setTimeout(() => {
       const c = new Array(8).fill(0);
-      for (let i = 0; i < shots; i++) {
+      for (let i = 0; i < requestedShots; i++) {
         // 直接读 bitstring → 整数；castOneYao 内部已用同一 RNG 池
         const y = castOneYao(0);
         c[parseInt(y.bitstring, 2)]++;
       }
       setCounts(c);
+      setSampleShots(requestedShots);
       setRunning(false);
+      timerRef.current = null;
     }, 30);
   };
 
@@ -183,8 +207,9 @@ function BatchExperiment() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const sampleSize = sampleShots ?? shots;
   const max = useMemo(() => (counts ? Math.max(...counts) : 1), [counts]);
-  const expected = shots / 8;
+  const expected = sampleSize / 8;
   const chiSquared = useMemo(() => {
     if (!counts) return null;
     return counts.reduce((acc, c) => acc + Math.pow(c - expected, 2) / expected, 0);
@@ -203,7 +228,7 @@ function BatchExperiment() {
           <select
             value={shots}
             onChange={(e) => setShots(parseInt(e.target.value))}
-            className="rounded-md border border-ink-600 bg-ink-900/60 px-2 py-1 text-xs text-ink-200"
+            className="min-h-11 rounded-md border border-ink-600 bg-ink-900/60 px-2 py-1 text-xs text-ink-200"
           >
             {[100, 1000, 10000, 50000].map((n) => (
               <option key={n} value={n}>{n.toLocaleString()} shots</option>
@@ -219,7 +244,7 @@ function BatchExperiment() {
         <>
           <div className="grid grid-cols-8 items-end gap-1.5 h-44">
             {counts.map((c, i) => {
-              const pct = (c / shots) * 100;
+              const pct = (c / sampleSize) * 100;
               const h = (c / max) * 100;
               return (
                 <div key={i} className="flex h-full flex-col items-center justify-end">
@@ -235,7 +260,7 @@ function BatchExperiment() {
           </div>
 
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <KV k="样本数" v={shots.toLocaleString()} />
+            <KV k="样本数" v={sampleSize.toLocaleString()} />
             <KV k="期望/态" v={expected.toFixed(1)} />
             <KV k="卡方 χ²" v={chiSquared !== null ? chiSquared.toFixed(2) : "—"} />
             <KV k="结论" v={chiSquared !== null && chiSquared < 14.07 ? "✓ 均匀" : "✗ 偏离"} />

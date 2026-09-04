@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { HexagramGlyph } from "./HexagramGlyph";
 import type { Hexagram } from "@/lib/hexagrams";
 
@@ -32,6 +32,7 @@ const META = {
 } as const;
 
 export function DerivedHexagrams({ hu, cuo, zong }: Props) {
+  const reduce = useReducedMotion();
   const items: Array<{ key: keyof typeof META; data: { binary: string; hex: Hexagram } }> = [
     { key: "hu", data: hu },
     { key: "cuo", data: cuo },
@@ -45,9 +46,9 @@ export function DerivedHexagrams({ hu, cuo, zong }: Props) {
         return (
           <motion.div
             key={key}
-            initial={{ opacity: 0, y: 16 }}
+            initial={reduce ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1, duration: 0.5 }}
+            transition={reduce ? { duration: 0 } : { delay: i * 0.1, duration: 0.5 }}
             className={`scroll-card flex flex-col gap-3 border bg-gradient-to-br p-4 ${m.color}`}
           >
             <header className="flex items-baseline justify-between">

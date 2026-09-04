@@ -1,39 +1,28 @@
-import Link from "next/link";
+"use client";
+
+import { useState } from "react";
 import { DivinationFlow } from "@/components/DivinationFlow";
 import { Hero } from "@/components/Hero";
-import { Atom, Alert, Book, Sparkles, Flask, Grid, Globe } from "@/components/Icon";
+import { Atom, Book, Sparkles, Flask, Grid, Globe } from "@/components/Icon";
+
+type FlowPhase = "ask" | "casting" | "results";
 
 export default function HomePage() {
+  const [phase, setPhase] = useState<FlowPhase>("ask");
+
   return (
     <div className="relative">
-      <Hero />
-      <section className="mx-auto max-w-6xl px-5 pb-20">
-        <DisclaimerBanner />
-        <DivinationFlow />
-      </section>
-      <FeatureGrid />
-    </div>
-  );
-}
-
-function DisclaimerBanner() {
-  return (
-    <div className="mx-auto mb-6 max-w-3xl">
-      <div className="flex items-start gap-3 rounded-md border border-cinnabar-500/30 bg-cinnabar-700/10 px-4 py-3 text-[13px] leading-relaxed text-ink-200">
-        <span className="mt-0.5 text-cinnabar-400">
-          <Alert size={16} />
-        </span>
-        <p>
-          <span className="font-display text-cinnabar-300">提示</span>
-          ：本项目内容仅供娱乐与文化反思，
-          <strong className="text-gold-200">不作为人生重大节点的决策依据</strong>。
-          完整说明见
-          <Link href="/disclaimer" className="ml-1 text-gold-300 underline-offset-2 hover:underline">
-            《免责声明》
-          </Link>
-          。
-        </p>
+      <div
+        className={`mx-auto max-w-7xl px-5 pb-16 pt-4 md:pb-20 md:pt-8 ${
+          phase === "ask" ? "grid gap-5 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:items-center lg:gap-12" : ""
+        }`}
+      >
+        {phase === "ask" && <Hero compact />}
+        <section className="min-w-0">
+          <DivinationFlow onPhaseChange={setPhase} />
+        </section>
       </div>
+      {phase === "ask" && <FeatureGrid />}
     </div>
   );
 }

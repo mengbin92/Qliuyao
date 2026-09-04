@@ -1,7 +1,8 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
-import { useState, useRef } from "react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { useCallback, useEffect, useState, useRef, type ReactNode } from "react";
+import Link from "next/link";
 import { QuantumCircuit } from "./QuantumCircuit";
 import { HexagramCard } from "./HexagramCard";
 import { StructureAnalysis } from "./StructureAnalysis";
@@ -16,15 +17,32 @@ import type { DivineResult } from "@/lib/types";
 
 type Phase = "ask" | "casting" | "results";
 
+interface DivinationFlowProps {
+  onPhaseChange?: (phase: Phase) => void;
+}
+
 const SUGGESTIONS = [
   "我是不是该接这个新的工作机会？",
   "这段感情还要继续走下去吗？",
   "现在是不是搬家的好时机？",
-  "我应该把存款投进这个项目吗？",
-  "我该如何看待最近的这次冲突？",
 ];
 
-export function DivinationFlow() {
+function waitForReveal(ms: number, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    signal.throwIfAborted();
+    const onAbort = () => {
+      clearTimeout(timer);
+      reject(signal.reason);
+    };
+    const timer = setTimeout(() => {
+      signal.removeEventListener("abort", onAbort);
+      resolve();
+    }, ms);
+    signal.addEventListener("abort", onAbort, { once: true });
+  });
+}
+
+export function DivinationFlow({ onPhaseChange }: DivinationFlowProps) {
   const [phase, setPhase] = useState<Phase>("ask");
   const [question, setQuestion] = useState("");
   const [step, setStep] = useState(0);
@@ -33,10 +51,26 @@ export function DivinationFlow() {
   const [revealedYaos, setRevealedYaos] = useState<Yao[]>([]);
   const [result, setResult] = useState<DivineResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const resultsRef = useRef<HTMLDivElement>(null);
+  const castRef = useRef<AbortController | null>(null);
+  const startedRef = useRef(false);
+  const reduce = useReducedMotion();
+  const focusPhase = useCallback((node: HTMLDivElement | null) => {
+    if (!node || !startedRef.current) return;
+    node.focus({ preventScroll: true });
+    node.scrollIntoView({ behavior: reduce ? "instant" : "smooth", block: "start" });
+  }, [reduce]);
+
+  useEffect(() => () => castRef.current?.abort(), []);
+
+  useEffect(() => {
+    onPhaseChange?.(phase);
+  }, [onPhaseChange, phase]);
 
   const cast = async () => {
-    if (!question.trim()) return;
+    if (!question.trim() || castRef.current) return;
+    const ctrl = new AbortController();
+    castRef.current = ctrl;
+    startedRef.current = true;
     setError(null);
     setPhase("casting");
     setStep(0);
@@ -45,53 +79,63 @@ export function DivinationFlow() {
     setRevealedYaos([]);
 
     // 先拿到 API 返回（含真实测量结果），再做"逐爻揭示"动画
-    let data: DivineResult;
     try {
-      const r = await fetch("/api/divine", { method: "POST" });
+      const r = await fetch("/api/divine", { method: "POST", signal: ctrl.signal });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      data = (await r.json()) as DivineResult;
+      const data = (await r.json()) as DivineResult;
+      ctrl.signal.throwIfAborted();
+
+      // 用真实结果做六次"测量动画"——视觉上是一爻一爻揭开
+      for (let i = 0; !reduce && i < 6; i++) {
+        setStep(i + 1);
+        setMeasuring(true);
+        setCurrentMeasure(null);
+        await waitForReveal(320, ctrl.signal);
+        // 把这一爻的真实 bitstring 放进电路图
+        setCurrentMeasure(data.yaos[i].bitstring);
+        setMeasuring(false);
+        // 加入到已揭示爻列表
+        setRevealedYaos((prev) => [...prev, data.yaos[i]]);
+        await waitForReveal(240, ctrl.signal);
+      }
+
+      setResult(data);
+      setPhase("results");
+      saveHistory({
+        id: data.castAt,
+        castAt: data.castAt,
+        question,
+        benName: data.ben.hex.name,
+        benSymbol: data.ben.hex.symbol,
+        benBinary: data.ben.binary,
+        bianName: data.bian?.hex.name,
+        bianBinary: data.bian?.binary,
+        moving: data.moving,
+      });
     } catch (e) {
-      setError((e as Error).message || "起卦失败");
-      setPhase("ask");
-      return;
+      if (!ctrl.signal.aborted) {
+        setError(e instanceof Error ? e.message : "起卦失败");
+        setPhase("ask");
+      }
+    } finally {
+      if (castRef.current === ctrl) castRef.current = null;
     }
-
-    // 用真实结果做六次"测量动画"——视觉上是一爻一爻揭开
-    for (let i = 0; i < 6; i++) {
-      setStep(i + 1);
-      setMeasuring(true);
-      setCurrentMeasure(null);
-      await new Promise((res) => setTimeout(res, 520));
-      // 把这一爻的真实 bitstring 放进电路图
-      setCurrentMeasure(data.yaos[i].bitstring);
-      setMeasuring(false);
-      // 加入到已揭示爻列表
-      setRevealedYaos((prev) => [...prev, data.yaos[i]]);
-      await new Promise((res) => setTimeout(res, 320));
-    }
-
-    setResult(data);
-    setPhase("results");
-    saveHistory({
-      id: data.castAt,
-      castAt: data.castAt,
-      question,
-      benName: data.ben.hex.name,
-      benSymbol: data.ben.hex.symbol,
-      benBinary: data.ben.binary,
-      bianName: data.bian?.hex.name,
-      bianBinary: data.bian?.binary,
-      moving: data.moving,
-    });
-    setTimeout(() => {
-      resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 120);
   };
 
   const reset = () => {
     setPhase("ask");
     setQuestion("");
     setResult(null);
+    setStep(0);
+    setCurrentMeasure(null);
+    setRevealedYaos([]);
+    setError(null);
+  };
+
+  const cancelCast = () => {
+    castRef.current?.abort();
+    castRef.current = null;
+    setPhase("ask");
     setStep(0);
     setCurrentMeasure(null);
     setRevealedYaos([]);
@@ -103,10 +147,13 @@ export function DivinationFlow() {
         {phase === "ask" && (
           <motion.div
             key="ask"
-            initial={{ opacity: 0, y: 12 }}
+            initial={reduce ? false : { opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            className="mx-auto max-w-3xl"
+            className="mx-auto max-w-3xl scroll-mt-24"
+            ref={focusPhase}
+            tabIndex={-1}
+            aria-label="填写求问内容"
           >
             <AskCard
               question={question}
@@ -120,10 +167,13 @@ export function DivinationFlow() {
         {phase === "casting" && (
           <motion.div
             key="casting"
-            initial={{ opacity: 0 }}
+            initial={reduce ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="mx-auto max-w-3xl"
+            className="mx-auto max-w-4xl scroll-mt-24"
+            ref={focusPhase}
+            tabIndex={-1}
+            aria-label="摇卦中"
           >
             <CastingCard
               question={question}
@@ -131,6 +181,7 @@ export function DivinationFlow() {
               measuring={measuring}
               measure={currentMeasure}
               revealedYaos={revealedYaos}
+              onCancel={cancelCast}
             />
           </motion.div>
         )}
@@ -138,67 +189,111 @@ export function DivinationFlow() {
         {phase === "results" && result && (
           <motion.div
             key="results"
-            initial={{ opacity: 0 }}
+            initial={reduce ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="space-y-6"
-            ref={resultsRef}
+            className="space-y-6 scroll-mt-24"
+            ref={focusPhase}
+            tabIndex={-1}
+            aria-label="起卦结果"
           >
             <ResultsHeader question={question} onReset={reset} result={result} />
 
-            <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr]">
-              <HexagramCard
-                binary={result.ben.binary}
-                hex={result.ben.hex}
-                lower={result.ben.lower}
-                upper={result.ben.upper}
-                changing={result.moving}
-                variant="ben"
-              />
-              {result.bian ? (
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.65fr)] lg:items-start">
+              <div className="order-2 min-w-0 lg:order-1">
+                <Reveal>
+                  <Interpretation
+                    question={question}
+                    yaos={result.yaos}
+                    benBin={result.ben.binary}
+                    bianBin={result.bian?.binary || result.ben.binary}
+                    autoStart
+                  />
+                </Reveal>
+              </div>
+
+              <aside className="result-summary order-1 grid min-w-0 grid-cols-2 gap-4 lg:order-2 lg:sticky lg:top-24 lg:max-h-[calc(100dvh-7rem)] lg:grid-cols-1 lg:overflow-y-auto lg:p-1" aria-label="本卦与变卦摘要">
                 <HexagramCard
-                  binary={result.bian.binary}
-                  hex={result.bian.hex}
-                  lower={result.bian.lower}
-                  upper={result.bian.upper}
-                  changing={[]}
-                  variant="bian"
+                  binary={result.ben.binary}
+                  hex={result.ben.hex}
+                  lower={result.ben.lower}
+                  upper={result.ben.upper}
+                  changing={result.moving}
+                  variant="ben"
+                  compact
                 />
-              ) : (
-                <NoChangeCard rule={result.rule} />
-              )}
+                {result.bian ? (
+                  <HexagramCard
+                    binary={result.bian.binary}
+                    hex={result.bian.hex}
+                    lower={result.bian.lower}
+                    upper={result.bian.upper}
+                    changing={[]}
+                    variant="bian"
+                    compact
+                  />
+                ) : (
+                  <NoChangeCard rule={result.rule} />
+                )}
+                <p className="col-span-full px-1 text-[11px] leading-relaxed text-ink-400">
+                  先看 AI 解读，再按需展开经文与结构依据。
+                </p>
+              </aside>
             </div>
 
-            <Reveal>
-              <Interpretation
-                question={question}
-                yaos={result.yaos}
-                benBin={result.ben.binary}
-                bianBin={result.bian?.binary || result.ben.binary}
-                autoStart
-              />
+            <Reveal delay={0.025}>
+              <DetailPanel
+                title="经文原文"
+                subtitle="卦辞 · 彖传 · 大象传 · 六爻爻辞"
+                desc="完整保留本卦与变卦的经典文本，按需展开阅读。"
+              >
+                <div className={`grid gap-5 ${result.bian ? "lg:grid-cols-2" : ""}`}>
+                  <HexagramCard
+                    binary={result.ben.binary}
+                    hex={result.ben.hex}
+                    lower={result.ben.lower}
+                    upper={result.ben.upper}
+                    changing={result.moving}
+                    variant="ben"
+                    animate={false}
+                  />
+                  {result.bian ? (
+                    <HexagramCard
+                      binary={result.bian.binary}
+                      hex={result.bian.hex}
+                      lower={result.bian.lower}
+                      upper={result.bian.upper}
+                      changing={[]}
+                      variant="bian"
+                      animate={false}
+                    />
+                  ) : null}
+                </div>
+              </DetailPanel>
             </Reveal>
 
             <Reveal delay={0.05}>
-              <SectionHeader
+              <DetailPanel
                 title="卦象解析"
                 subtitle="当位 · 中正 · 应位 · 承乘"
-                desc="易学家用来判断卦象内在结构的几个关键概念。下面是这一卦的全部位结构分析——动爻有特别标记。"
-              />
-              <StructureAnalysis analysis={result.ben.analysis} changing={result.moving} />
+                desc="易学家用来判断卦象内在结构的几个关键概念。动爻有特别标记。"
+              >
+                <StructureAnalysis analysis={result.ben.analysis} changing={result.moving} />
+              </DetailPanel>
             </Reveal>
 
             <Reveal delay={0.1}>
-              <SectionHeader
+              <DetailPanel
                 title="衍生卦"
                 subtitle="互卦 · 错卦 · 综卦"
-                desc="从本卦再演化出三个角度的「参照卦」，揭示这一情境的内部结构、对立面、以及换视角看的样貌。"
-              />
-              <DerivedHexagrams
-                hu={result.derived.hu}
-                cuo={result.derived.cuo}
-                zong={result.derived.zong}
-              />
+                desc="从本卦再演化出三个角度的参照卦。"
+              >
+                <DerivedHexagrams
+                  hu={result.derived.hu}
+                  cuo={result.derived.cuo}
+                  zong={result.derived.zong}
+                />
+              </DetailPanel>
             </Reveal>
 
             <Footer onReset={reset} />
@@ -223,13 +318,13 @@ function AskCard({
   const len = question.length;
   const max = 200;
   return (
-    <div className="scroll-card-elevated stamp-border space-y-4 p-7 md:p-9">
+    <div className="scroll-card-elevated stamp-border space-y-4 p-5 md:p-7">
       <div>
         <p className="font-display text-xs tracking-[0.18em] text-cinnabar-400">DIVINATION · 起卦</p>
-        <h2 className="mt-2 font-display text-2xl text-gold-200 md:text-3xl">
+        <h2 className="mt-2 font-display text-xl text-gold-200 md:text-2xl">
           沉静下来 · 把心里的事写下来
         </h2>
-        <p className="mt-2 font-serif text-sm italic leading-relaxed text-ink-300">
+        <p className="mt-2 hidden font-serif text-sm italic leading-relaxed text-ink-300 lg:block">
           《系辞》：「易，无思也，无为也，寂然不动，感而遂通天下之故。」
         </p>
       </div>
@@ -241,7 +336,7 @@ function AskCard({
           onChange={(e) => setQuestion(e.target.value.slice(0, max))}
           placeholder="例如：我应该接这个新项目吗？"
           rows={3}
-          className="w-full resize-none rounded-md border border-ink-600/60 bg-ink-900/60 px-4 py-3 font-serif text-base leading-relaxed text-ink-100 placeholder:text-ink-400 focus:border-gold-400/60 focus:outline-none focus:ring-2 focus:ring-gold-500/20"
+          className="w-full resize-none rounded-md border border-ink-600/60 bg-ink-900/60 px-4 pt-3 pb-6 font-serif text-base leading-relaxed text-ink-100 placeholder:text-ink-400 focus:border-gold-400/60 focus:outline-none focus:ring-2 focus:ring-gold-500/20"
           maxLength={max}
         />
         <span className="absolute bottom-2 right-3 font-mono text-[10px] text-ink-400">
@@ -257,7 +352,7 @@ function AskCard({
               key={s}
               onClick={() => setQuestion(s)}
               type="button"
-              className="min-h-[36px] rounded-full border border-ink-600/50 bg-ink-900/40 px-3.5 py-1.5 text-[13px] leading-snug text-ink-200 transition hover:border-gold-500/40 hover:bg-ink-800/40 hover:text-gold-200 focus-visible:border-gold-500/60"
+              className="min-h-11 rounded-full border border-ink-600/50 bg-ink-900/40 px-3.5 py-1.5 text-[13px] leading-snug text-ink-200 transition hover:border-gold-500/40 hover:bg-ink-800/40 hover:text-gold-200 focus-visible:border-gold-500/60"
             >
               {s}
             </button>
@@ -265,20 +360,25 @@ function AskCard({
         </div>
       </div>
 
-      <div className="flex flex-col items-center justify-between gap-3 border-t border-ink-700/40 pt-4 md:flex-row">
-        <p className="text-[11px] text-ink-400">
+      <div className="flex flex-col-reverse items-center justify-between gap-3 border-t border-ink-700/40 pt-4 sm:flex-row">
+        <p className="hidden text-[11px] text-ink-400 sm:block">
           量子电路 · 6 次 H<sup>⊗3</sup> + 单 shot 测量
         </p>
         <button
           type="button"
-          className="btn-primary group"
+          className="btn-primary group w-full sm:w-auto"
           onClick={onCast}
           disabled={!question.trim()}
         >
-          <span>起 · 卦</span>
+          <span>开始起卦</span>
           <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
         </button>
       </div>
+
+      <p className="text-xs leading-relaxed text-ink-400">
+        仅供娱乐与文化反思，不作为重大决策依据。
+        <Link href="/disclaimer" className="text-gold-300 underline underline-offset-2">免责声明</Link>
+      </p>
 
       {error && (
         <div className="rounded-md border border-cinnabar-500/40 bg-cinnabar-700/15 px-4 py-3 text-sm text-cinnabar-300">
@@ -295,21 +395,23 @@ function CastingCard({
   measuring,
   measure,
   revealedYaos,
+  onCancel,
 }: {
   question: string;
   step: number;
   measuring: boolean;
   measure: string | null;
   revealedYaos: Yao[];
+  onCancel: () => void;
 }) {
   // 用已揭示的爻 + 还没揭示的占位，构造目前可见的卦象
   const visible = Array.from({ length: 6 }, (_, i) => revealedYaos[i] ?? null);
   return (
-    <div className="grid gap-5 md:grid-cols-[1fr_300px] lg:grid-cols-[1fr_340px]">
-      <div className="space-y-5 md:order-1 order-2">
+    <div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_300px] lg:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="min-w-0 space-y-5 md:order-1 order-2">
         <div className="scroll-card p-5">
           <p className="text-xs text-ink-300">求问</p>
-          <p className="mt-1 font-serif text-base text-ink-100">{question}</p>
+          <p className="mt-1 break-words font-serif text-base text-ink-100">{question}</p>
         </div>
 
         <QuantumCircuit step={step} result={measure} measuring={measuring} />
@@ -326,9 +428,9 @@ function CastingCard({
               <span
                 key={i}
                 className={`h-1.5 w-8 rounded-full transition-all ${
-                  i < step
+                  i < revealedYaos.length
                     ? "bg-gold-400"
-                    : i === step - 1
+                    : i === step - 1 && measuring
                       ? "animate-pulse bg-gold-400"
                       : "bg-ink-700"
                 }`}
@@ -353,6 +455,9 @@ function CastingCard({
             ? "✓ 卦象已成，正在分析…"
             : `已成 ${revealedYaos.length} / 6 爻`}
         </p>
+        <button type="button" className="btn-ghost btn-sm w-full" onClick={onCancel}>
+          中止起卦
+        </button>
       </div>
     </div>
   );
@@ -446,9 +551,9 @@ function ResultsHeader({
 
   return (
     <div className="scroll-card-elevated stamp-border flex flex-col gap-3 p-6 md:flex-row md:items-center md:justify-between">
-      <div className="flex-1">
+      <div className="min-w-0 flex-1">
         <p className="text-[11px] tracking-[0.18em] text-cinnabar-400">YOUR HEXAGRAM</p>
-        <p className="mt-1 font-serif text-base text-ink-200">{question}</p>
+        <h1 className="mt-1 break-words font-serif text-base text-ink-200">{question}</h1>
         <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
           <span className="font-display text-gold-200">
             {result.ben.hex.symbol} {result.ben.hex.name}
@@ -466,6 +571,7 @@ function ResultsHeader({
         <p className="mt-2 text-[11px] text-ink-400">{result.rule}</p>
       </div>
       <div className="flex shrink-0 flex-wrap gap-2 self-start md:self-center">
+        <a href="#interpretation" className="btn-ghost btn-sm lg:hidden">查看解读</a>
         <button onClick={onCopy} type="button" className="btn-ghost btn-sm" aria-label="复制卦象摘要">
           {copied ? <Check size={14} /> : <Copy size={14} />}
           <span>{copied ? "已复制" : "复制摘要"}</span>
@@ -481,11 +587,11 @@ function ResultsHeader({
 
 function NoChangeCard({ rule }: { rule: string }) {
   return (
-    <div className="scroll-card relative flex flex-col items-center justify-center gap-4 p-8 text-center">
-      <span className="absolute -top-3 left-6 rounded-md border border-quantum-500/40 bg-gradient-to-br from-quantum-700/40 to-quantum-900/40 px-3 py-1 font-display text-xs tracking-[0.18em] text-quantum-200">
+    <div className="scroll-card relative flex flex-col items-center justify-center gap-3 p-4 text-center">
+      <span className="rounded-md border border-quantum-500/40 px-3 py-1 font-display text-xs text-quantum-200">
         无变卦
       </span>
-      <span className="grid h-20 w-20 place-items-center rounded-full border border-gold-500/30 bg-ink-900/60 text-gold-300">
+      <span className="grid h-12 w-12 place-items-center rounded-full border border-gold-500/30 bg-ink-900/60 text-gold-300">
         <Taiji size={32} />
       </span>
       <h3 className="font-display text-xl text-gold-200">六爻皆静</h3>
@@ -496,27 +602,53 @@ function NoChangeCard({ rule }: { rule: string }) {
   );
 }
 
-function SectionHeader({
+function DetailPanel({
   title,
   subtitle,
   desc,
+  children,
 }: {
   title: string;
   subtitle: string;
-  desc?: string;
+  desc: string;
+  children: ReactNode;
 }) {
+  const detailsRef = useRef<HTMLDetailsElement>(null);
+  useEffect(() => {
+    const details = detailsRef.current;
+    if (!details) return;
+    let previousOpen: boolean | undefined;
+    const beforePrint = () => {
+      previousOpen ??= details.open;
+      details.open = true;
+    };
+    const afterPrint = () => {
+      if (previousOpen !== undefined) details.open = previousOpen;
+      previousOpen = undefined;
+    };
+    window.addEventListener("beforeprint", beforePrint);
+    window.addEventListener("afterprint", afterPrint);
+    return () => {
+      window.removeEventListener("beforeprint", beforePrint);
+      window.removeEventListener("afterprint", afterPrint);
+    };
+  }, []);
   return (
-    <header className="mb-3 flex items-end justify-between gap-4">
-      <div>
-        <h2 className="font-display text-xl text-gold-200">{title}</h2>
-        <p className="text-[12px] tracking-wide text-ink-300">{subtitle}</p>
-      </div>
-      {desc && (
-        <p className="hidden max-w-md text-right text-[12px] leading-relaxed text-ink-400 md:block">
-          {desc}
-        </p>
-      )}
-    </header>
+    <details ref={detailsRef} className="result-details scroll-card group">
+      <summary className="cursor-pointer list-none px-5 py-4 [&::-webkit-details-marker]:hidden">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h2 className="font-display text-xl text-gold-200">{title}</h2>
+            <p className="text-[12px] tracking-wide text-ink-300">{subtitle}</p>
+            <p className="mt-1 max-w-2xl text-[12px] leading-relaxed text-ink-400">{desc}</p>
+          </div>
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-ink-700 text-ink-300 transition-transform group-open:rotate-180" aria-hidden>
+            ↓
+          </span>
+        </div>
+      </summary>
+      <div className="border-t border-ink-700/50 px-5 py-5">{children}</div>
+    </details>
   );
 }
 

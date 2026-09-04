@@ -22,7 +22,7 @@ export function Reveal({ children, delay = 0, y = 16, className, index }: Props)
   const computedDelay = delay + (index ?? 0) * 0.08;
   return (
     <motion.div
-      className={className}
+      className={`reveal ${className ?? ""}`}
       initial={reduce ? false : { opacity: 0, y }}
       whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-10% 0px -10% 0px" }}

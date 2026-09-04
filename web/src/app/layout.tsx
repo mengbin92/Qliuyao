@@ -4,7 +4,6 @@ import "@fontsource-variable/jetbrains-mono/wght.css";
 import "./globals.css";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
-import { HistoryFab } from "@/components/HistoryFab";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://qliuyao.mengbin.top"),
@@ -58,7 +57,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main id="main-content" className="flex-1">{children}</main>
           <SiteFooter />
         </div>
-        <HistoryFab />
       </body>
     </html>
   );

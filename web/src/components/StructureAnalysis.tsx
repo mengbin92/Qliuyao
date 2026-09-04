@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { POSITION_NAME, type FullAnalysis } from "@/lib/analysis";
 import { cn } from "@/lib/utils";
 
@@ -25,6 +25,7 @@ export function StructureAnalysis({ analysis, changing = [] }: Props) {
 }
 
 function PositionSection({ analysis, changing = [] }: Props) {
+  const reduce = useReducedMotion();
   // 自上而下：上爻在顶
   const order = [...analysis.positions].slice().reverse();
   return (
@@ -44,9 +45,9 @@ function PositionSection({ analysis, changing = [] }: Props) {
           return (
             <motion.div
               key={p.index}
-              initial={{ opacity: 0, x: -10 }}
+              initial={reduce ? false : { opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.35, delay: (5 - p.index) * 0.05 }}
+              transition={reduce ? { duration: 0 } : { duration: 0.35, delay: (5 - p.index) * 0.05 }}
               className={cn(
                 "grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-3 rounded-md border px-3 py-2 text-sm",
                 p.zhongZheng
@@ -58,7 +59,7 @@ function PositionSection({ analysis, changing = [] }: Props) {
               )}
             >
               <span className="w-12 font-display text-sm text-gold-300">{p.label}</span>
-              <span className="font-serif text-ink-200">
+              <span className="min-w-0 break-words font-serif text-ink-200">
                 <YaoMini isYang={p.isYang} small />
                 <span className="ml-2 text-ink-300">在</span>
                 <span className="ml-1 text-ink-200">
@@ -88,6 +89,7 @@ function PositionSection({ analysis, changing = [] }: Props) {
 }
 
 function CorrespondenceSection({ analysis }: { analysis: FullAnalysis }) {
+  const reduce = useReducedMotion();
   return (
     <div className="scroll-card p-5">
       <header className="mb-3 flex items-center justify-between">
@@ -107,9 +109,9 @@ function CorrespondenceSection({ analysis }: { analysis: FullAnalysis }) {
           return (
             <motion.div
               key={i}
-              initial={{ opacity: 0, y: 6 }}
+              initial={reduce ? false : { opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
+              transition={reduce ? { duration: 0 } : { delay: i * 0.05 }}
               className={cn(
                 "rounded-md border px-3 py-3 text-center",
                 good
@@ -182,9 +184,9 @@ function NeighborSection({ analysis }: { analysis: FullAnalysis }) {
               <span className="font-display text-xs text-ink-200">
                 {n.labels[1]} <span className="mx-1 text-ink-400">↑</span> {n.labels[0]}
               </span>
-              <div className="flex items-center gap-2">
+              <div className="min-w-0 flex items-center justify-end gap-2 text-right">
                 <span className={cn("font-display text-sm", m.txt)}>{n.relation}</span>
-                <span className="text-[11px] text-ink-400">{n.description}</span>
+                <span className="break-words text-[11px] text-ink-400">{n.description}</span>
               </div>
             </div>
           );

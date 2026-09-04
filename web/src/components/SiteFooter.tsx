@@ -25,10 +25,10 @@ export function SiteFooter() {
               快速入口
             </h3>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/" className="text-ink-200 hover:text-gold-200">起一卦</Link></li>
-              <li><Link href="/quantum" className="text-ink-200 hover:text-gold-200">量子电路原理</Link></li>
-              <li><Link href="/index-64" className="text-ink-200 hover:text-gold-200">六十四卦索引</Link></li>
-              <li><Link href="/about" className="text-ink-200 hover:text-gold-200">项目缘起</Link></li>
+              <li><Link href="/" className="inline-flex min-h-11 items-center text-ink-200 hover:text-gold-200">起一卦</Link></li>
+              <li><Link href="/quantum" className="inline-flex min-h-11 items-center text-ink-200 hover:text-gold-200">量子电路原理</Link></li>
+              <li><Link href="/index-64" className="inline-flex min-h-11 items-center text-ink-200 hover:text-gold-200">六十四卦索引</Link></li>
+              <li><Link href="/about" className="inline-flex min-h-11 items-center text-ink-200 hover:text-gold-200">项目缘起</Link></li>
             </ul>
           </div>
 
@@ -42,7 +42,7 @@ export function SiteFooter() {
                   href="https://github.com/Keith9922/Qliuyao"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-ink-200 hover:text-gold-200"
+                  className="inline-flex min-h-11 items-center text-ink-200 hover:text-gold-200"
                 >
                   GitHub 源码
                 </a>
@@ -52,7 +52,7 @@ export function SiteFooter() {
                   href="https://platform.deepseek.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-ink-200 hover:text-gold-200"
+                  className="inline-flex min-h-11 items-center text-ink-200 hover:text-gold-200"
                 >
                   DeepSeek 平台
                 </a>
@@ -62,13 +62,13 @@ export function SiteFooter() {
                   href="https://pypi.org/project/pyqpanda3/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-ink-200 hover:text-gold-200"
+                  className="inline-flex min-h-11 items-center text-ink-200 hover:text-gold-200"
                 >
                   pyqpanda3 SDK
                 </a>
               </li>
               <li>
-                <Link href="/disclaimer" className="text-cinnabar-400 hover:text-cinnabar-500">
+                <Link href="/disclaimer" className="inline-flex min-h-11 items-center text-cinnabar-400 hover:text-cinnabar-500">
                   免责声明
                 </Link>
               </li>
@@ -78,7 +78,7 @@ export function SiteFooter() {
 
         <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-ink-700/40 pt-6 text-xs text-ink-400 md:flex-row">
           <p>© {new Date().getFullYear()} 量子六爻 · MIT License</p>
-          <p className="font-mono">
+          <p className="break-words text-center font-mono md:text-right">
             邵雍 → 莱布尼茨 → 量子比特 · 三千年的二进制
           </p>
         </div>

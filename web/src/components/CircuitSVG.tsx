@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { useId } from "react";
 
 /**
@@ -68,6 +68,8 @@ const PRESETS: Record<
 
 export function CircuitSVG({ size = "compact", result, measuring = false, title }: Props) {
   const cfg = PRESETS[size];
+  const reduce = useReducedMotion();
+  const animatedMeasuring = measuring && !reduce;
   const filterId = useId();
   const wireId = `${filterId}-wire`;
   const gateId = `${filterId}-gate`;
@@ -144,10 +146,10 @@ export function CircuitSVG({ size = "compact", result, measuring = false, title 
             fill={`url(#${gateId})`}
             stroke="#a6abff"
             strokeWidth="1.5"
-            filter={measuring && !result ? `url(#${glowId})` : undefined}
-            initial={{ opacity: 0, scale: 0.7 }}
+            filter={animatedMeasuring && !result ? `url(#${glowId})` : undefined}
+            initial={reduce ? false : { opacity: 0, scale: 0.7 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1 * i, duration: 0.4 }}
+            transition={reduce ? { duration: 0 } : { delay: 0.1 * i, duration: 0.4 }}
           />
           <text
             x={0}
@@ -177,13 +179,13 @@ export function CircuitSVG({ size = "compact", result, measuring = false, title 
               fill={measured ? "#2c2c2e" : "#2c2b70"}
               stroke={measured ? "#64a9ff" : "#a6abff"}
               strokeWidth="1.5"
-              filter={measuring ? `url(#${glowId})` : undefined}
+              filter={animatedMeasuring ? `url(#${glowId})` : undefined}
               animate={
-                measuring
+                animatedMeasuring
                   ? { scale: [1, 1.06, 1], opacity: [0.7, 1, 0.7] }
                   : { scale: 1, opacity: 1 }
               }
-              transition={{ duration: 1.2, repeat: measuring ? Infinity : 0 }}
+              transition={{ duration: animatedMeasuring ? 1.2 : 0, repeat: animatedMeasuring ? Infinity : 0 }}
             />
             <text
               x={0}

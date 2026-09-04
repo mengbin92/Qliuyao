@@ -1,9 +1,9 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Yao } from "@/lib/quantum";
-import { cn } from "@/lib/utils";
+import { readSSEData } from "@/lib/sse";
 
 interface Props {
   question: string;
@@ -42,7 +42,7 @@ function parseSections(raw: string): { sections: Section[]; trailing: string } {
     const bodyEnd = i + 1 < matches.length ? matches[i + 1].idx : raw.length;
     return { title: cur.title, body: raw.slice(bodyStart, bodyEnd).trim() };
   });
-  return { sections, trailing: "" };
+  return { sections, trailing: raw.slice(0, matches[0].idx).trim() };
 }
 
 /** 简化 Markdown → React 节点，避免 dangerouslySetInnerHTML。 */
@@ -115,21 +115,20 @@ function renderInline(text: string): React.ReactNode {
 
 export function Interpretation({ question, yaos, benBin, bianBin, autoStart = true }: Props) {
   const [text, setText] = useState("");
-  const [running, setRunning] = useState(false);
+  const [status, setStatus] = useState<"idle" | "running" | "done" | "stopped" | "error">("idle");
+  const running = status === "running";
+  const done = status === "done";
   const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
-  const start = async () => {
-    if (running) return;
-    setRunning(true);
+  const start = useCallback(async () => {
+    if (abortRef.current) return;
+    setStatus("running");
     setError(null);
-    setDone(false);
     setText("");
 
     const ctrl = new AbortController();
     abortRef.current = ctrl;
-    let reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
 
     try {
       const res = await fetch("/api/interpret", {
@@ -141,104 +140,108 @@ export function Interpretation({ question, yaos, benBin, bianBin, autoStart = tr
 
       if (!res.ok) {
         const errBody = await res.json().catch(() => ({} as { error?: string }));
-        throw new Error(errBody?.error || `HTTP ${res.status}`);
+        throw new Error(typeof errBody?.error === "string" ? errBody.error : `HTTP ${res.status}`);
       }
       if (!res.body) throw new Error("无响应流");
 
-      reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-
-      for (;;) {
-        const { done: rDone, value } = await reader.read();
-        if (rDone) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() ?? "";
-        for (const raw of lines) {
-          const line = raw.trim();
-          if (!line.startsWith("data:")) continue;
-          const payload = line.slice(5).trim();
-          if (payload === "[DONE]") continue;
-          let parsed: { text?: string; error?: string } | null = null;
-          try {
-            parsed = JSON.parse(payload);
-          } catch {
-            continue;
-          }
-          if (parsed?.error) throw new Error(parsed.error);
-          if (parsed?.text) setText((t) => t + parsed.text);
+      let completed = false;
+      let received = "";
+      for await (const payload of readSSEData(res.body)) {
+        if (ctrl.signal.aborted || abortRef.current !== ctrl) return;
+        if (payload === "[DONE]") {
+          completed = true;
+          break;
+        }
+        const parsed = JSON.parse(payload) as { text?: unknown; error?: unknown } | null;
+        if (typeof parsed?.error === "string") throw new Error(parsed.error);
+        if (typeof parsed?.text === "string") {
+          received += parsed.text;
+          setText(received);
         }
       }
-      setDone(true);
+      if (ctrl.signal.aborted || abortRef.current !== ctrl) return;
+      if (!completed) throw new Error("连接提前结束，解读未完成，请重试。");
+      if (!received.trim()) throw new Error("未收到解读内容，请重试。");
+      setStatus("done");
     } catch (e) {
-      if ((e as Error).name === "AbortError") return;
-      setError((e as Error).message || "未知错误");
-    } finally {
-      try {
-        reader?.releaseLock();
-      } catch {
-        /* already released */
+      if (abortRef.current !== ctrl) return;
+      if (ctrl.signal.aborted) {
+        setStatus("stopped");
+      } else {
+        setError(e instanceof Error ? e.message : "未知错误");
+        setStatus("error");
       }
-      setRunning(false);
+    } finally {
+      if (abortRef.current === ctrl) abortRef.current = null;
     }
+  }, [question, yaos, benBin, bianBin]);
+
+  const stop = () => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setStatus("stopped");
   };
 
   useEffect(() => {
     if (autoStart) start();
-    return () => abortRef.current?.abort();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    return () => {
+      abortRef.current?.abort();
+      abortRef.current = null;
+    };
+  }, [autoStart, start]);
 
   const { sections, trailing } = useMemo(() => parseSections(text), [text]);
 
   return (
-    <section className="scroll-card-elevated relative overflow-hidden p-6 md:p-8">
-      <span className="absolute -top-3 left-6 rounded-md border border-cinnabar-500/40 bg-gradient-to-br from-cinnabar-700/40 to-cinnabar-800/40 px-3 py-1 font-display text-xs tracking-[0.18em] text-gold-100">
-        AI 解卦
-      </span>
-
-      <header className="mb-5 mt-2 flex flex-wrap items-end justify-between gap-3">
+    <section id="interpretation" aria-label="AI 解读" className="scroll-card-elevated relative min-w-0 scroll-mt-24 break-words p-5 md:p-7">
+      <header className="mb-5 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="font-display text-2xl text-gold-200">解卦师正在落笔</h2>
+          <h2 className="font-display text-2xl text-gold-200">AI 解读</h2>
+          <p role="status" className="mt-2 text-sm text-ink-200">
+            {running ? "解卦师正在落笔" : done ? "解读已完成" : status === "stopped" ? "已中止，可重新解读" : status === "error" ? "解读暂未完成" : "等待开始解读"}
+          </p>
           <p className="mt-1 text-xs text-ink-300">
             DeepSeek + 周易·十翼 经学知识库 · 朱子断卦法
           </p>
         </div>
-        {!running && (done || error) && (
+        {!running && (
           <button onClick={start} className="btn-ghost btn-sm" type="button">
-            重新解卦
+            {status === "idle" ? "开始解读" : "重新解卦"}
           </button>
         )}
         {running && (
-          <button onClick={() => abortRef.current?.abort()} className="btn-ghost btn-sm" type="button">
+          <button onClick={stop} className="btn-ghost btn-sm" type="button">
             中止
           </button>
         )}
       </header>
 
       {error && (
-        <div className="rounded-md border border-cinnabar-500/40 bg-cinnabar-700/15 px-4 py-3 text-sm text-cinnabar-300">
+        <div role="alert" className="rounded-md border border-cinnabar-500/40 bg-cinnabar-700/15 px-4 py-3 text-sm text-cinnabar-300">
           解卦失败：{error}
-          <button onClick={start} className="ml-3 underline">
+          <button type="button" onClick={start} className="ml-3 min-h-11 underline">
             重试
           </button>
         </div>
       )}
 
-      {!error && sections.length === 0 && !done && (
-        <SkeletonInterpretation streaming={running} trailing={trailing} />
+      {trailing && (
+        <div className="prose-custom whitespace-pre-wrap text-sm">{bodyToNodes(trailing)}</div>
+      )}
+
+      {running && sections.length === 0 && !trailing && (
+        <SkeletonInterpretation />
       )}
 
       {sections.length > 0 && (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-4">
           {sections.map((s, i) => (
             <SectionCard key={i} index={i} section={s} streaming={running && i === sections.length - 1} />
           ))}
         </div>
       )}
 
-      {!running && done && sections.length > 0 && (
+      {done && (
         <p className="mt-6 text-center text-[11px] text-ink-400">
           ✦ 解读由 AI 生成，仅供参考与反思。 ✦
         </p>
@@ -259,12 +262,13 @@ const SectionCard = memo(function SectionCard({
   streaming: boolean;
 }) {
   const nodes = useMemo(() => bodyToNodes(section.body), [section.body]);
+  const reduce = useReducedMotion();
   return (
     <motion.article
-      initial={{ opacity: 0, y: 8 }}
+      initial={reduce ? false : { opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
-      className={cn("scroll-card border border-gold-500/15 p-4", index === 1 && "md:col-span-2")}
+      className="scroll-card border border-gold-500/15 p-4"
     >
       <header className="mb-2 flex items-center gap-2">
         <span className="font-display text-lg text-cinnabar-400">{SECTION_ICON[index] ?? "❉"}</span>
@@ -276,15 +280,7 @@ const SectionCard = memo(function SectionCard({
   );
 });
 
-function SkeletonInterpretation({ streaming, trailing }: { streaming: boolean; trailing: string }) {
-  if (trailing) {
-    return (
-      <div className="prose-custom whitespace-pre-wrap text-sm">
-        {trailing}
-        {streaming && <span className="ml-1 inline-block h-3 w-2 animate-pulse bg-gold-400" />}
-      </div>
-    );
-  }
+function SkeletonInterpretation() {
   return (
     <div className="space-y-4">
       <p className="shimmer-text font-display text-sm tracking-[0.12em]">研墨 · 落笔 · 推演 ...</p>

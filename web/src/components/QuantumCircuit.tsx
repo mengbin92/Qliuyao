@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { CircuitSVG } from "./CircuitSVG";
 
 /**
@@ -19,6 +19,7 @@ interface Props {
 }
 
 export function QuantumCircuit({ step, result, measuring }: Props) {
+  const reduce = useReducedMotion();
   return (
     <div className="scroll-card overflow-hidden p-6">
       <div className="mb-3 flex items-center justify-between">
@@ -45,13 +46,14 @@ export function QuantumCircuit({ step, result, measuring }: Props) {
             className="flex items-center justify-between rounded-md border border-ink-700/50 bg-ink-900/60 px-3 py-2"
           >
             <span className="text-ink-300">{label}</span>
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="wait" initial={!reduce}>
               {result ? (
                 <motion.span
                   key={result[i]}
-                  initial={{ opacity: 0, scale: 0.7, y: -6 }}
+                  initial={reduce ? false : { opacity: 0, scale: 0.7, y: -6 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
+                  exit={reduce ? undefined : { opacity: 0 }}
+                  transition={reduce ? { duration: 0 } : undefined}
                   className={
                     result[i] === "1" ? "font-bold text-quantum-300" : "font-bold text-cinnabar-400"
                   }
@@ -61,8 +63,9 @@ export function QuantumCircuit({ step, result, measuring }: Props) {
               ) : (
                 <motion.span
                   key="superposition"
-                  initial={{ opacity: 0 }}
+                  initial={reduce ? false : { opacity: 0 }}
                   animate={{ opacity: 1 }}
+                  transition={reduce ? { duration: 0 } : undefined}
                   className="text-quantum-300"
                 >
                   |+⟩
