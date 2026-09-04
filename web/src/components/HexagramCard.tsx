@@ -49,7 +49,7 @@ export function HexagramCard({
     >
       {variantTag && (
         <span
-          className={`absolute -top-3 left-6 rounded-md border bg-gradient-to-br px-3 py-1 font-display text-xs tracking-[0.3em] ${variantTag.classes}`}
+          className={`absolute -top-3 left-6 rounded-md border bg-gradient-to-br px-3 py-1 font-display text-xs tracking-[0.18em] ${variantTag.classes}`}
         >
           {variantTag.label}
         </span>
@@ -80,26 +80,26 @@ export function HexagramCard({
       </div>
 
       <div className="rounded-md border border-gold-500/20 bg-ink-900/40 px-4 py-3">
-        <p className="mb-1 font-display text-xs tracking-widest text-gold-400">卦辞</p>
+        <p className="mb-1 font-display text-xs tracking-[0.12em] text-gold-400">卦辞</p>
         <p className="font-serif text-base leading-relaxed text-ink-100">{hex.judgment}</p>
       </div>
 
       {hex.tuan && (
         <div className="rounded-md border border-ink-700/60 bg-ink-900/30 px-4 py-3">
-          <p className="mb-1 font-display text-xs tracking-widest text-gold-400">彖传</p>
+          <p className="mb-1 font-display text-xs tracking-[0.12em] text-gold-400">彖传</p>
           <p className="font-serif text-sm leading-relaxed text-ink-200">{hex.tuan}</p>
         </div>
       )}
 
       {hex.daXiang && (
         <div className="rounded-md border border-ink-700/60 bg-ink-900/30 px-4 py-3">
-          <p className="mb-1 font-display text-xs tracking-widest text-gold-400">大象传</p>
+          <p className="mb-1 font-display text-xs tracking-[0.12em] text-gold-400">大象传</p>
           <p className="font-serif text-sm leading-relaxed text-ink-200">{hex.daXiang}</p>
         </div>
       )}
 
       <div>
-        <p className="mb-2 font-display text-xs tracking-widest text-gold-400">六爻爻辞</p>
+        <p className="mb-2 font-display text-xs tracking-[0.12em] text-gold-400">六爻爻辞</p>
         <ul className="space-y-1.5 font-serif text-sm leading-relaxed">
           {[...hex.lines].reverse().map((line, revIdx) => {
             const idx = 5 - revIdx; // 自上而下显示
@@ -123,7 +123,7 @@ export function HexagramCard({
 
       {hex.extra && (
         <div className="rounded-md border border-cinnabar-500/30 bg-cinnabar-700/10 px-4 py-3">
-          <p className="mb-1 font-display text-xs tracking-widest text-cinnabar-400">用</p>
+          <p className="mb-1 font-display text-xs tracking-[0.12em] text-cinnabar-400">用</p>
           <p className="font-serif text-sm leading-relaxed text-ink-100">{hex.extra}</p>
         </div>
       )}

@@ -1,30 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Noto_Serif_SC, Noto_Sans_SC, JetBrains_Mono } from "next/font/google";
+import "@fontsource-variable/noto-sans-sc/wght.css";
+import "@fontsource-variable/jetbrains-mono/wght.css";
 import "./globals.css";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { HistoryFab } from "@/components/HistoryFab";
-
-const serif = Noto_Serif_SC({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "900"],
-  variable: "--font-serif",
-  display: "swap",
-});
-
-const sans = Noto_Sans_SC({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "700"],
-  variable: "--font-sans",
-  display: "swap",
-});
-
-const mono = JetBrains_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-mono",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://qliuyao.mengbin.top"),
@@ -63,14 +43,14 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0c0a07",
+  themeColor: "#000000",
   width: "device-width",
   initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="zh-CN" className={`${serif.variable} ${sans.variable} ${mono.variable}`}>
+    <html lang="zh-CN">
       <body>
         <a href="#main-content" className="skip-link">跳到主内容</a>
         <div className="relative z-10 flex min-h-screen flex-col">

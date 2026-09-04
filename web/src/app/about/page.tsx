@@ -11,7 +11,7 @@ export default function AboutPage() {
   return (
     <div className="mx-auto max-w-3xl px-5 py-10 md:py-16">
       <header className="text-center">
-        <p className="font-display text-[11px] tracking-[0.5em] text-gold-400">
+        <p className="font-display text-[11px] tracking-[0.2em] text-gold-400">
           ABOUT · 项目背景
         </p>
         <h1 className="mt-4 font-display text-4xl leading-tight text-gold-100 md:text-5xl">
@@ -103,7 +103,7 @@ export default function AboutPage() {
         <br />被观测之后，是已经发生的。
         <br />中间的一刻，叫做『动』。」
       </blockquote>
-      <p className="mt-2 text-center text-[11px] tracking-widest text-ink-400">
+      <p className="mt-2 text-center text-[11px] tracking-[0.12em] text-ink-400">
         — 这个项目想说的话
       </p>
     </div>

@@ -29,9 +29,9 @@ export function QuantumCircuit({ step, result, measuring }: Props) {
           </p>
         </div>
         <div className="text-right">
-          <span className="text-xs tracking-widest text-ink-300">第</span>
+          <span className="text-xs tracking-[0.12em] text-ink-300">第</span>
           <span className="mx-1 font-display text-2xl text-gold-200">{step === 0 ? "—" : step}</span>
-          <span className="text-xs tracking-widest text-ink-300">爻</span>
+          <span className="text-xs tracking-[0.12em] text-ink-300">爻</span>
           <p className="text-[11px] tracking-[0.25em] text-ink-400">/ 共 6 爻</p>
         </div>
       </div>

@@ -52,7 +52,7 @@ export default async function HexagramPage({ params }: { params: Params }) {
       </Link>
 
       <header className="text-center">
-        <p className="font-display text-[10px] tracking-[0.5em] text-gold-400">
+        <p className="font-display text-[10px] tracking-[0.2em] text-gold-400">
           NO.{h.num} · {h.pinyin.toUpperCase()}
         </p>
         <h1 className="mt-3 font-display text-5xl text-gold-100 md:text-6xl">

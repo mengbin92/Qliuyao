@@ -21,7 +21,7 @@ export function SiteFooter() {
           </div>
 
           <div>
-            <h3 className="mb-3 font-display text-sm tracking-widest text-gold-300">
+            <h3 className="mb-3 font-display text-sm tracking-[0.12em] text-gold-300">
               快速入口
             </h3>
             <ul className="space-y-2 text-sm">
@@ -33,7 +33,7 @@ export function SiteFooter() {
           </div>
 
           <div>
-            <h3 className="mb-3 font-display text-sm tracking-widest text-gold-300">
+            <h3 className="mb-3 font-display text-sm tracking-[0.12em] text-gold-300">
               资源
             </h3>
             <ul className="space-y-2 text-sm">

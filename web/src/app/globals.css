@@ -2,11 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-/* --font-{serif,sans,mono} 由 next/font 在 <html> 上注入。
-   --font-display 复用 serif（衬线作展示字）。 */
-:root {
-  --font-display: var(--font-serif);
-}
+/* 字体由 @fontsource-variable 本地包注入（与 micro-one-api 相同方案），
+   避免构建期访问 Google Fonts。标题与正文同族（Apple 风格）。 */
 
 html {
   scroll-behavior: smooth;
@@ -14,12 +11,11 @@ html {
 }
 
 body {
-  font-family: var(--font-sans), "PingFang SC", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  background:
-    radial-gradient(ellipse at top, #1a140d 0%, #0c0a07 60%) fixed,
-    #0c0a07;
+  font-family: "Noto Sans SC Variable", "PingFang SC", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  background: theme("colors.ink.950");
   color: theme("colors.ink.100");
   min-height: 100dvh;
+  letter-spacing: -0.01em;
   font-feature-settings: "kern", "liga", "calt";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -32,76 +28,54 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* 古卷纸纹理叠加 */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(circle at 20% 30%, rgba(196,133,29,0.05), transparent 40%),
-    radial-gradient(circle at 80% 70%, rgba(124,38,24,0.04), transparent 40%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* 文字渐变金色 */
+/* 主题蓝渐变文字（标题强调） */
 .text-gold-gradient {
-  background: linear-gradient(135deg, #f4dd8a 0%, #c4851d 50%, #f4dd8a 100%);
+  background: linear-gradient(135deg, #64a9ff 0%, #0a84ff 50%, #64a9ff 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
 }
 
-/* 量子蓝渐变文字 */
+/* 量子靛渐变文字 */
 .text-quantum-gradient {
-  background: linear-gradient(135deg, #92aeff 0%, #475bff 50%, #92aeff 100%);
+  background: linear-gradient(135deg, #a6abff 0%, #5e5ce6 50%, #a6abff 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
 }
 
-/* 古卷纸卡片：暖色边框 + 半透明深色背景 */
+/* 卡片：#1C1C1E 表面 + 8% 白色描边 + 表面阴影 */
 .scroll-card {
-  background:
-    linear-gradient(135deg, rgba(28,20,12,0.85), rgba(20,15,8,0.92));
-  border: 1px solid rgba(189,165,102,0.2);
-  border-radius: 14px;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: theme("colors.ink.900");
+  border: 1px solid rgb(255 255 255 / 0.10);
+  border-radius: 12px;
   box-shadow:
-    0 4px 24px rgba(0,0,0,0.4),
-    inset 0 1px 0 rgba(237,196,78,0.08);
+    0 1px 3px rgb(0 0 0 / 0.3),
+    0 1px 2px rgb(0 0 0 / 0.4);
 }
 
 .scroll-card-elevated {
-  background:
-    linear-gradient(135deg, rgba(36,26,16,0.92), rgba(24,18,10,0.95));
-  border: 1px solid rgba(237,196,78,0.25);
+  background: theme("colors.ink.900");
+  border: 1px solid rgb(255 255 255 / 0.10);
   border-radius: 16px;
   box-shadow:
-    0 12px 40px rgba(0,0,0,0.5),
-    0 0 0 1px rgba(237,196,78,0.05),
-    inset 0 1px 0 rgba(237,196,78,0.12);
+    0 12px 40px rgb(0 0 0 / 0.5),
+    0 2px 8px rgb(0 0 0 / 0.35);
 }
 
-/* 朱印章纹饰 */
+/* 保留类名兼容：原朱印章内描边改为极淡白色发丝线 */
 .stamp-border {
   position: relative;
 }
 .stamp-border::after {
   content: "";
   position: absolute;
-  inset: 4px;
-  border: 1px solid rgba(196,74,54,0.2);
+  inset: 0;
+  border: 1px solid rgb(255 255 255 / 0.04);
   border-radius: inherit;
   pointer-events: none;
-}
-
-/* 爻线绘制动画 */
-.yao-line {
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* 自定义滚动条 */
@@ -113,36 +87,26 @@ body::before {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(189,165,102,0.2);
+  background: rgb(255 255 255 / 0.16);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(189,165,102,0.4);
+  background: rgb(255 255 255 / 0.28);
 }
 
-/* 链接选中态 */
+/* 文本选中态 */
 ::selection {
-  background: rgba(237,196,78,0.3);
+  background: rgb(10 132 255 / 0.35);
   color: theme("colors.ink.50");
-}
-
-/* 量子电路 SVG 线条动画 */
-.circuit-wire {
-  stroke-dasharray: 1000;
-  stroke-dashoffset: 1000;
-  animation: draw-wire 1.5s ease-out forwards;
-}
-@keyframes draw-wire {
-  to { stroke-dashoffset: 0; }
 }
 
 /* 闪光横扫（用于"摇卦中"提示） */
 .shimmer-text {
   background: linear-gradient(
     90deg,
-    rgba(237,196,78,0.6) 0%,
-    rgba(255,235,180,1) 50%,
-    rgba(237,196,78,0.6) 100%
+    rgba(100,169,255,0.6) 0%,
+    rgba(214,234,255,1) 50%,
+    rgba(100,169,255,0.6) 100%
   );
   background-size: 200% 100%;
   -webkit-background-clip: text;
@@ -155,7 +119,7 @@ body::before {
   100% { background-position: -100% 0; }
 }
 
-/* 印章风格按钮 — 触控目标遵守 ≥44px 最小高度（Apple HIG） */
+/* 主按钮 — Apple systemBlue 实心；触控目标 ≥44px */
 .btn-primary {
   display: inline-flex;
   align-items: center;
@@ -163,31 +127,24 @@ body::before {
   gap: 8px;
   min-height: 44px;
   padding: 10px 28px;
-  font-family: var(--font-display);
   font-weight: 500;
   font-size: 15px;
-  letter-spacing: 0.1em;
-  background: linear-gradient(135deg, #c4851d 0%, #a06517 100%);
-  color: #15110a;
-  border: 1px solid #edc44e;
+  letter-spacing: 0.01em;
+  background: theme("colors.gold.500");
+  color: #ffffff;
+  border: 1px solid transparent;
   border-radius: 10px;
   cursor: pointer;
   touch-action: manipulation;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-              opacity 0.2s ease;
-  box-shadow:
-    0 4px 16px rgba(237,196,78,0.25),
-    inset 0 1px 0 rgba(255,255,255,0.2);
+  transition: transform 0.15s cubic-bezier(0.25, 0.1, 0.25, 1),
+              background-color 0.15s ease,
+              opacity 0.15s ease;
 }
 .btn-primary:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow:
-    0 8px 28px rgba(237,196,78,0.4),
-    inset 0 1px 0 rgba(255,255,255,0.3);
+  background: theme("colors.gold.400");
 }
 .btn-primary:active:not(:disabled) {
-  transform: translateY(0) scale(0.98);
+  transform: scale(0.97);
 }
 .btn-primary:disabled {
   opacity: 0.5;
@@ -201,26 +158,28 @@ body::before {
   gap: 8px;
   min-height: 44px;
   padding: 10px 22px;
-  font-family: var(--font-display);
-  font-size: 14px;
-  letter-spacing: 0.05em;
+  font-weight: 500;
+  font-size: 15px;
+  letter-spacing: 0.01em;
+  color: theme("colors.ink.100");
   background: transparent;
-  color: theme("colors.gold.300");
-  border: 1px solid rgba(189,165,102,0.3);
+  border: 1px solid rgb(255 255 255 / 0.10);
   border-radius: 10px;
   cursor: pointer;
   touch-action: manipulation;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  transition: transform 0.15s cubic-bezier(0.25, 0.1, 0.25, 1),
+              background-color 0.15s ease,
+              border-color 0.15s ease;
 }
 .btn-ghost:hover {
-  background: rgba(237,196,78,0.08);
-  border-color: rgba(237,196,78,0.5);
+  background: theme("colors.ink.800");
+  border-color: rgb(255 255 255 / 0.16);
 }
 .btn-ghost:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
-/* hero-chip：英雄区圆角胶囊 CTA，按主题分量子色/朱砂色 */
+/* hero-chip：英雄区圆角胶囊 CTA */
 .hero-chip {
   display: inline-flex;
   min-height: 38px;
@@ -230,93 +189,72 @@ body::before {
   border-radius: 9999px;
   border: 1px solid;
   font-size: 13px;
-  letter-spacing: 0.06em;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.25s ease,
-              background-color 0.25s ease,
-              box-shadow 0.25s ease;
+  letter-spacing: 0.02em;
+  transition: transform 0.2s cubic-bezier(0.25, 0.1, 0.25, 1),
+              border-color 0.2s ease,
+              background-color 0.2s ease;
 }
 .hero-chip:hover {
   transform: translateY(-1px);
 }
 .hero-chip-quantum {
-  border-color: rgba(71, 91, 255, 0.4);
-  background: rgba(20, 25, 104, 0.45);
-  color: theme("colors.quantum.200");
+  border-color: rgb(94 92 230 / 0.45);
+  background: rgb(94 92 230 / 0.12);
+  color: theme("colors.quantum.300");
 }
 .hero-chip-quantum:hover {
-  border-color: rgba(146, 174, 255, 0.7);
-  box-shadow: 0 6px 22px rgba(71, 91, 255, 0.25);
+  border-color: rgb(166 171 255 / 0.7);
+  background: rgb(94 92 230 / 0.2);
 }
 .hero-chip-gold {
-  border-color: rgba(189, 165, 102, 0.4);
-  background: rgba(20, 15, 8, 0.45);
-  color: theme("colors.gold.200");
+  border-color: rgb(10 132 255 / 0.45);
+  background: rgb(10 132 255 / 0.12);
+  color: theme("colors.gold.300");
 }
 .hero-chip-gold:hover {
-  border-color: rgba(237, 196, 78, 0.7);
-  box-shadow: 0 6px 22px rgba(237, 196, 78, 0.18);
+  border-color: rgb(100 169 255 / 0.7);
+  background: rgb(10 132 255 / 0.2);
 }
 .hero-chip-cinnabar {
-  border-color: rgba(196, 74, 54, 0.45);
-  background: rgba(124, 38, 24, 0.2);
+  border-color: rgb(255 69 58 / 0.45);
+  background: rgb(255 69 58 / 0.12);
   color: theme("colors.cinnabar.300");
 }
 .hero-chip-cinnabar:hover {
-  border-color: rgba(224, 125, 101, 0.75);
-  box-shadow: 0 6px 22px rgba(196, 74, 54, 0.2);
+  border-color: rgb(255 138 129 / 0.7);
+  background: rgb(255 69 58 / 0.2);
 }
 
-/* 小尺寸按钮：仍要 ≥44px 触控（在小字体上靠 padding 撑起来） */
+/* 小尺寸按钮：仍要 ≥40px 触控 */
 .btn-primary.btn-sm,
 .btn-ghost.btn-sm {
   min-height: 40px;
   padding: 8px 16px;
   font-size: 13px;
-  letter-spacing: 0.08em;
-}
-
-/* 朱砂印章 */
-.zhusha-stamp {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-display);
-  background: linear-gradient(135deg, #a23323 0%, #7c2618 100%);
-  color: #f4dd8a;
-  border: 2px solid #561811;
-  border-radius: 4px;
-  box-shadow:
-    inset 0 0 0 1px rgba(244,221,138,0.3),
-    0 2px 8px rgba(124,38,24,0.4);
-  letter-spacing: 0.2em;
 }
 
 /* prose 风格 */
 .prose-custom {
-  color: theme("colors.ink.100");
+  color: theme("colors.ink.200");
   line-height: 1.85;
 }
-.prose-custom h1 { font-family: var(--font-display); font-size: 1.875rem; color: theme("colors.gold.300"); margin: 1.5rem 0 1rem; }
-.prose-custom h2 { font-family: var(--font-display); font-size: 1.5rem; color: theme("colors.gold.300"); margin: 1.25rem 0 0.75rem; }
-.prose-custom h3 { font-family: var(--font-display); font-size: 1.25rem; color: theme("colors.gold.200"); margin: 1rem 0 0.5rem; }
+.prose-custom h1 { font-size: 1.875rem; font-weight: 700; letter-spacing: -0.02em; color: theme("colors.ink.50"); margin: 1.5rem 0 1rem; }
+.prose-custom h2 { font-size: 1.5rem; font-weight: 600; letter-spacing: -0.02em; color: theme("colors.ink.50"); margin: 1.25rem 0 0.75rem; }
+.prose-custom h3 { font-size: 1.25rem; font-weight: 600; color: theme("colors.ink.100"); margin: 1rem 0 0.5rem; }
 .prose-custom p { margin: 0.75rem 0; }
-.prose-custom strong { color: theme("colors.gold.200"); font-weight: 600; }
-.prose-custom em { color: theme("colors.cinnabar.400"); font-style: normal; }
+.prose-custom strong { color: theme("colors.ink.100"); font-weight: 600; }
+.prose-custom em { color: theme("colors.gold.300"); font-style: normal; }
 .prose-custom blockquote {
-  border-left: 3px solid theme("colors.gold.400");
+  border-left: 3px solid theme("colors.gold.500");
   padding-left: 1rem;
-  font-style: italic;
-  color: theme("colors.ink.200");
+  color: theme("colors.ink.300");
   margin: 1rem 0;
 }
 .prose-custom code {
-  background: rgba(189,165,102,0.1);
+  background: rgb(255 255 255 / 0.08);
   padding: 0.1em 0.4em;
   border-radius: 4px;
-  font-family: var(--font-mono);
+  font-family: "JetBrains Mono Variable", ui-monospace, monospace;
   font-size: 0.92em;
 }
 .prose-custom ul, .prose-custom ol { padding-left: 1.5rem; margin: 0.75rem 0; }
@@ -324,12 +262,12 @@ body::before {
 .prose-custom a {
   color: theme("colors.gold.300");
   text-decoration: underline;
-  text-decoration-color: rgba(237,196,78,0.4);
+  text-decoration-color: rgb(10 132 255 / 0.4);
   text-underline-offset: 3px;
 }
 .prose-custom a:hover { color: theme("colors.gold.200"); }
 
-/* 占用 reduced-motion 时禁用大部分动画 */
+/* reduced-motion 时禁用大部分动画 */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -344,9 +282,6 @@ body::before {
     background: #fff !important;
     color: #000 !important;
   }
-  body::before {
-    display: none !important;
-  }
   header[class*="sticky"], footer, button, a[href^="#"], aside {
     display: none !important;
   }
@@ -358,7 +293,7 @@ body::before {
     page-break-inside: avoid;
   }
   .text-gold-200, .text-gold-100, .text-gold-300 {
-    color: #4a3a14 !important;
+    color: #004c99 !important;
   }
   .text-ink-100, .text-ink-200, .text-ink-300 {
     color: #333 !important;
@@ -367,7 +302,7 @@ body::before {
 
 /* 焦点可见的高对比环 */
 :focus-visible {
-  outline: 2px solid theme("colors.gold.300");
+  outline: 2px solid theme("colors.gold.500");
   outline-offset: 3px;
   border-radius: 4px;
 }
@@ -385,9 +320,8 @@ a:focus-visible {
   z-index: 60;
   padding: 8px 16px;
   background: theme("colors.gold.500");
-  color: theme("colors.ink.950");
+  color: #ffffff;
   border-radius: 8px;
-  font-family: var(--font-display);
   font-size: 14px;
   transition: top 0.2s ease;
 }

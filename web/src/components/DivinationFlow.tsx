@@ -225,7 +225,7 @@ function AskCard({
   return (
     <div className="scroll-card-elevated stamp-border space-y-4 p-7 md:p-9">
       <div>
-        <p className="font-display text-xs tracking-[0.3em] text-cinnabar-400">DIVINATION · 起卦</p>
+        <p className="font-display text-xs tracking-[0.18em] text-cinnabar-400">DIVINATION · 起卦</p>
         <h2 className="mt-2 font-display text-2xl text-gold-200 md:text-3xl">
           沉静下来 · 把心里的事写下来
         </h2>
@@ -250,7 +250,7 @@ function AskCard({
       </div>
 
       <div>
-        <p className="mb-2 text-[11px] tracking-widest text-ink-400">参考问句</p>
+        <p className="mb-2 text-[11px] tracking-[0.12em] text-ink-400">参考问句</p>
         <div className="flex flex-wrap gap-2">
           {SUGGESTIONS.map((s) => (
             <button
@@ -339,7 +339,7 @@ function CastingCard({
       </div>
 
       <div className="scroll-card-elevated stamp-border order-1 flex flex-col items-center justify-start gap-4 p-6 md:order-2">
-        <p className="font-display text-xs tracking-[0.3em] text-gold-300">CAST IN PROGRESS</p>
+        <p className="font-display text-xs tracking-[0.18em] text-gold-300">CAST IN PROGRESS</p>
         <p className="text-[10px] text-ink-300">自下而上 · 初爻 → 上爻</p>
 
         <div className="my-2 flex w-full flex-col-reverse gap-1.5">
@@ -447,7 +447,7 @@ function ResultsHeader({
   return (
     <div className="scroll-card-elevated stamp-border flex flex-col gap-3 p-6 md:flex-row md:items-center md:justify-between">
       <div className="flex-1">
-        <p className="text-[11px] tracking-[0.3em] text-cinnabar-400">YOUR HEXAGRAM</p>
+        <p className="text-[11px] tracking-[0.18em] text-cinnabar-400">YOUR HEXAGRAM</p>
         <p className="mt-1 font-serif text-base text-ink-200">{question}</p>
         <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
           <span className="font-display text-gold-200">
@@ -482,7 +482,7 @@ function ResultsHeader({
 function NoChangeCard({ rule }: { rule: string }) {
   return (
     <div className="scroll-card relative flex flex-col items-center justify-center gap-4 p-8 text-center">
-      <span className="absolute -top-3 left-6 rounded-md border border-quantum-500/40 bg-gradient-to-br from-quantum-700/40 to-quantum-900/40 px-3 py-1 font-display text-xs tracking-[0.3em] text-quantum-200">
+      <span className="absolute -top-3 left-6 rounded-md border border-quantum-500/40 bg-gradient-to-br from-quantum-700/40 to-quantum-900/40 px-3 py-1 font-display text-xs tracking-[0.18em] text-quantum-200">
         无变卦
       </span>
       <span className="grid h-20 w-20 place-items-center rounded-full border border-gold-500/30 bg-ink-900/60 text-gold-300">

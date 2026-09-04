@@ -38,14 +38,14 @@ export function HexagramGlyph({ binary, changing = [], size = "md", animate = fa
     >
       <defs>
         <linearGradient id={`yao-grad-${binary}`} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#c4851d" />
-          <stop offset="50%" stopColor="#edc44e" />
-          <stop offset="100%" stopColor="#c4851d" />
+          <stop offset="0%" stopColor="#0a84ff" />
+          <stop offset="50%" stopColor="#64a9ff" />
+          <stop offset="100%" stopColor="#0a84ff" />
         </linearGradient>
         <linearGradient id={`yao-grad-changing-${binary}`} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#a23323" />
-          <stop offset="50%" stopColor="#e07d65" />
-          <stop offset="100%" stopColor="#a23323" />
+          <stop offset="0%" stopColor="#d70015" />
+          <stop offset="50%" stopColor="#ff6961" />
+          <stop offset="100%" stopColor="#d70015" />
         </linearGradient>
       </defs>
 
@@ -116,8 +116,8 @@ export function HexagramGlyph({ binary, changing = [], size = "md", animate = fa
             cx={w - padX / 2}
             cy={yPos}
             r={lineH / 2.5}
-            fill="#c44a36"
-            stroke="#561811"
+            fill="#ff453a"
+            stroke="#4d0008"
             strokeWidth={1}
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}

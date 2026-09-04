@@ -194,7 +194,7 @@ export function Interpretation({ question, yaos, benBin, bianBin, autoStart = tr
 
   return (
     <section className="scroll-card-elevated relative overflow-hidden p-6 md:p-8">
-      <span className="absolute -top-3 left-6 rounded-md border border-cinnabar-500/40 bg-gradient-to-br from-cinnabar-700/40 to-cinnabar-800/40 px-3 py-1 font-display text-xs tracking-[0.3em] text-gold-100">
+      <span className="absolute -top-3 left-6 rounded-md border border-cinnabar-500/40 bg-gradient-to-br from-cinnabar-700/40 to-cinnabar-800/40 px-3 py-1 font-display text-xs tracking-[0.18em] text-gold-100">
         AI 解卦
       </span>
 
@@ -287,7 +287,7 @@ function SkeletonInterpretation({ streaming, trailing }: { streaming: boolean; t
   }
   return (
     <div className="space-y-4">
-      <p className="shimmer-text font-display text-sm tracking-widest">研墨 · 落笔 · 推演 ...</p>
+      <p className="shimmer-text font-display text-sm tracking-[0.12em]">研墨 · 落笔 · 推演 ...</p>
       <div className="grid gap-3 md:grid-cols-2">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="space-y-2 rounded-md border border-ink-700/40 bg-ink-900/30 p-4">

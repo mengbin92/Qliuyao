@@ -87,7 +87,7 @@ function FeatureGrid() {
   return (
     <section className="mx-auto max-w-6xl px-5 pb-20">
       <div className="text-center">
-        <p className="font-display text-[11px] tracking-[0.4em] text-gold-400">FEATURES</p>
+        <p className="font-display text-[11px] tracking-[0.2em] text-gold-400">FEATURES</p>
         <h2 className="mt-2 font-display text-2xl text-gold-200 md:text-3xl">
           为什么这个项目和别的占卜小工具不一样
         </h2>
@@ -110,7 +110,7 @@ function FeatureGrid() {
                 >
                   <f.Icon size={22} />
                 </span>
-                <span className="font-mono text-[11px] tracking-[0.3em] text-ink-400">{f.tag}</span>
+                <span className="font-mono text-[11px] tracking-[0.18em] text-ink-400">{f.tag}</span>
               </div>
               <h3 className="font-display text-base text-gold-200">{f.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-ink-200">{f.desc}</p>

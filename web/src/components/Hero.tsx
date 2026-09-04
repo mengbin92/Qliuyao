@@ -32,7 +32,7 @@ export function Hero() {
             initial={reduce ? false : { y: 8, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.25, duration: 0.55 }}
-            className="font-display text-[11px] tracking-[0.5em] text-gold-400 md:text-xs"
+            className="font-display text-[11px] tracking-[0.2em] text-gold-400 md:text-xs"
           >
             QUANTUM · LIUYAO · 量子六爻
           </motion.p>
@@ -41,7 +41,7 @@ export function Hero() {
             initial={reduce ? false : { y: 12, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.65 }}
-            className="mt-3 font-display text-5xl leading-[1.05] tracking-wider text-gold-100 md:text-7xl"
+            className="mt-3 font-display text-5xl leading-[1.05] tracking-wide text-gold-100 md:text-7xl"
           >
             <span className="block">把铜钱换成<span className="text-quantum-gradient">量子比特</span></span>
             <span className="mt-2 block text-3xl text-gold-200 md:mt-3 md:text-5xl">
@@ -96,7 +96,7 @@ function Seal() {
         className="absolute -inset-6 rounded-full"
         style={{
           background:
-            "radial-gradient(circle, rgba(237,196,78,0.18) 0%, rgba(237,196,78,0) 65%)",
+            "radial-gradient(circle, rgba(10,132,255,0.16) 0%, rgba(10,132,255,0) 65%)",
         }}
       />
       <div className="relative grid h-full w-full place-items-center text-gold-200">
@@ -117,7 +117,7 @@ function Backdrop() {
       className="pointer-events-none absolute inset-0 -z-0"
       style={{
         background:
-          "radial-gradient(ellipse 70% 50% at 50% 30%, rgba(196,133,29,0.07) 0%, rgba(196,133,29,0) 70%)",
+          "radial-gradient(ellipse 70% 50% at 50% 30%, rgba(10,132,255,0.07) 0%, rgba(10,132,255,0) 70%)",
       }}
     />
   );

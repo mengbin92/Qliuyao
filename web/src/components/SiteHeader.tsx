@@ -26,10 +26,10 @@ export function SiteHeader() {
             <Taiji size={22} />
           </span>
           <span>
-            <span className="block font-display text-xl font-semibold tracking-wider text-gold-200">
+            <span className="block font-display text-xl font-semibold tracking-wide text-gold-200">
               量子六爻
             </span>
-            <span className="block text-[11px] tracking-[0.3em] text-ink-300">
+            <span className="block text-[11px] tracking-[0.18em] text-ink-300">
               QUANTUM · LIUYAO
             </span>
           </span>
@@ -84,7 +84,7 @@ export function SiteHeader() {
                 )}
               >
                 <span className="font-display">{n.label}</span>
-                <span className="text-[10px] tracking-widest text-ink-400">{n.desc}</span>
+                <span className="text-[10px] tracking-[0.12em] text-ink-400">{n.desc}</span>
               </Link>
             );
           })}

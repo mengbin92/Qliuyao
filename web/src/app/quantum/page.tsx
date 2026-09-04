@@ -12,7 +12,7 @@ export default function QuantumPage() {
   return (
     <div className="mx-auto max-w-4xl px-5 py-10 md:py-16">
       <header className="text-center">
-        <p className="font-display text-[11px] tracking-[0.5em] text-quantum-300">
+        <p className="font-display text-[11px] tracking-[0.2em] text-quantum-300">
           QUANTUM CIRCUIT · 量子电路
         </p>
         <h1 className="mt-4 font-display text-4xl text-gold-100 md:text-5xl">

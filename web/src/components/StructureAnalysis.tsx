@@ -125,13 +125,13 @@ function CorrespondenceSection({ analysis }: { analysis: FullAnalysis }) {
                     y1="6"
                     x2="18"
                     y2="6"
-                    stroke={good ? "#edc44e" : "#7a5a25"}
+                    stroke={good ? "#64a9ff" : "#6e6e73"}
                     strokeWidth="1.5"
                     strokeDasharray={good ? "" : "2 2"}
                   />
                   <polygon
                     points="14,2 18,6 14,10"
-                    fill={good ? "#edc44e" : "#7a5a25"}
+                    fill={good ? "#64a9ff" : "#6e6e73"}
                   />
                 </svg>
                 <span>{c.labels[1]}</span>
@@ -223,7 +223,7 @@ function Tag({ kind, label }: { kind: "good" | "great" | "bad" | "warning" | "ne
     neutral: "border-ink-600/60 bg-ink-800/40 text-ink-200",
   };
   return (
-    <span className={cn("rounded border px-2 py-0.5 font-display text-[10px] tracking-widest", map[kind])}>
+    <span className={cn("rounded border px-2 py-0.5 font-display text-[10px] tracking-[0.12em]", map[kind])}>
       {label}
     </span>
   );

@@ -77,13 +77,13 @@ export function CircuitSVG({ size = "compact", result, measuring = false, title 
     <svg viewBox={`0 0 ${cfg.width} ${cfg.height}`} className="h-auto w-full" role="img" aria-label="量子电路图">
       <defs>
         <linearGradient id={wireId} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#475bff" stopOpacity="0.4" />
-          <stop offset="50%" stopColor="#92aeff" stopOpacity="0.95" />
-          <stop offset="100%" stopColor="#475bff" stopOpacity="0.4" />
+          <stop offset="0%" stopColor="#5e5ce6" stopOpacity="0.4" />
+          <stop offset="50%" stopColor="#a6abff" stopOpacity="0.95" />
+          <stop offset="100%" stopColor="#5e5ce6" stopOpacity="0.4" />
         </linearGradient>
         <linearGradient id={gateId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#252fc0" />
-          <stop offset="100%" stopColor="#141968" />
+          <stop offset="0%" stopColor="#4846b8" />
+          <stop offset="100%" stopColor="#1a1a42" />
         </linearGradient>
         <filter id={glowId}>
           <feGaussianBlur stdDeviation={size === "wide" ? "4" : "3"} result="b" />
@@ -98,8 +98,8 @@ export function CircuitSVG({ size = "compact", result, measuring = false, title 
         <text
           x={cfg.width / 2}
           y={20}
-          fill="#a07e3c"
-          fontFamily="JetBrains Mono"
+          fill="#98989d"
+          fontFamily="JetBrains Mono Variable, monospace"
           fontSize="10"
           textAnchor="middle"
           letterSpacing="3"
@@ -110,14 +110,14 @@ export function CircuitSVG({ size = "compact", result, measuring = false, title 
 
       {cfg.laneYs.map((y, i) => (
         <g key={`lane-${i}`}>
-          <text x={size === "wide" ? 20 : 10} y={y + 5} fill="#ece5d4" fontFamily="JetBrains Mono" fontSize="14">
+          <text x={size === "wide" ? 20 : 10} y={y + 5} fill="#f5f5f7" fontFamily="JetBrains Mono Variable, monospace" fontSize="14">
             q<tspan baselineShift="sub" fontSize="9">{i}</tspan>
           </text>
           <text
             x={size === "wide" ? 20 : 10}
             y={y + 22}
-            fill="#a07e3c"
-            fontFamily="JetBrains Mono"
+            fill="#98989d"
+            fontFamily="JetBrains Mono Variable, monospace"
             fontSize="9"
           >
             |0⟩
@@ -142,7 +142,7 @@ export function CircuitSVG({ size = "compact", result, measuring = false, title 
             height={cfg.gateH}
             rx={4}
             fill={`url(#${gateId})`}
-            stroke="#92aeff"
+            stroke="#a6abff"
             strokeWidth="1.5"
             filter={measuring && !result ? `url(#${glowId})` : undefined}
             initial={{ opacity: 0, scale: 0.7 }}
@@ -152,9 +152,9 @@ export function CircuitSVG({ size = "compact", result, measuring = false, title 
           <text
             x={0}
             y={6}
-            fill="#dee9ff"
+            fill="#dde1ff"
             textAnchor="middle"
-            fontFamily="JetBrains Mono"
+            fontFamily="JetBrains Mono Variable, monospace"
             fontSize={cfg.fontGate}
             fontWeight="600"
           >
@@ -174,8 +174,8 @@ export function CircuitSVG({ size = "compact", result, measuring = false, title 
               width={cfg.gateW}
               height={cfg.gateH}
               rx={4}
-              fill={measured ? "#3d2c14" : "#1c2390"}
-              stroke={measured ? "#edc44e" : "#92aeff"}
+              fill={measured ? "#2c2c2e" : "#2c2b70"}
+              stroke={measured ? "#64a9ff" : "#a6abff"}
               strokeWidth="1.5"
               filter={measuring ? `url(#${glowId})` : undefined}
               animate={
@@ -188,9 +188,9 @@ export function CircuitSVG({ size = "compact", result, measuring = false, title 
             <text
               x={0}
               y={size === "wide" ? 7 : 6}
-              fill={measured ? "#edc44e" : "#dee9ff"}
+              fill={measured ? "#64a9ff" : "#dde1ff"}
               textAnchor="middle"
-              fontFamily="JetBrains Mono"
+              fontFamily="JetBrains Mono Variable, monospace"
               fontSize={size === "wide" ? 20 : 14}
               fontWeight="600"
             >
@@ -207,7 +207,7 @@ export function CircuitSVG({ size = "compact", result, measuring = false, title 
             y1={y - 2}
             x2={cfg.classicalEndX - 14}
             y2={y - 2}
-            stroke={result ? "#edc44e" : "#5a401a"}
+            stroke={result ? "#64a9ff" : "#48484a"}
             strokeWidth="1.2"
           />
           <line
@@ -215,14 +215,14 @@ export function CircuitSVG({ size = "compact", result, measuring = false, title 
             y1={y + 2}
             x2={cfg.classicalEndX - 14}
             y2={y + 2}
-            stroke={result ? "#edc44e" : "#5a401a"}
+            stroke={result ? "#64a9ff" : "#48484a"}
             strokeWidth="1.2"
           />
           <text
             x={cfg.classicalEndX - 6}
             y={y + 4}
-            fill={result ? "#edc44e" : "#a07e3c"}
-            fontFamily="JetBrains Mono"
+            fill={result ? "#64a9ff" : "#98989d"}
+            fontFamily="JetBrains Mono Variable, monospace"
             fontSize={size === "wide" ? 13 : 11}
             textAnchor="end"
           >
@@ -234,8 +234,8 @@ export function CircuitSVG({ size = "compact", result, measuring = false, title 
       <text
         x={cfg.hadamardX}
         y={cfg.height - 15}
-        fill="#a07e3c"
-        fontFamily="Noto Serif SC"
+        fill="#98989d"
+        fontFamily="Noto Sans SC Variable, sans-serif"
         fontSize={cfg.labelFont}
         textAnchor="middle"
       >
@@ -244,8 +244,8 @@ export function CircuitSVG({ size = "compact", result, measuring = false, title 
       <text
         x={cfg.measureX}
         y={cfg.height - 15}
-        fill="#a07e3c"
-        fontFamily="Noto Serif SC"
+        fill="#98989d"
+        fontFamily="Noto Sans SC Variable, sans-serif"
         fontSize={cfg.labelFont}
         textAnchor="middle"
       >
