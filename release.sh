@@ -36,14 +36,25 @@ if [ "$GITHUB_USER" = "你的GitHub用户名" ]; then
     exit 1
 fi
 
-# 1. 安全检查：API key 是否要发出去
-echo -e "${Y}⚠️  即将公开的内容包含 .env（DeepSeek API key 在里面）${N}"
-echo "   按你之前的要求这是预期行为（共享 demo key）。"
-echo "   提醒：公开后 GitHub 爬虫几小时内会发现这个 key，"
-echo "         DeepSeek 可能自动作废它。如果你不想分享，按 Ctrl-C 退出，"
-echo "         先把 .env 加到 .gitignore 再回来。"
-echo ""
-read -p "   按回车继续，Ctrl-C 取消... "
+# 1. 安全检查：确认没有真实凭据会被推送出去
+#    公开仓库里一旦出现 .env，GitHub 的密钥扫描机器人几分钟内就会发现，
+#    所以这里在推送前做硬校验，而不是靠人工记得不提交。
+echo -e "${G}→ 检查是否有凭据文件会被推送${N}"
+LEAKED_FILES=""
+for f in .env .env.local web/.env web/.env.local; do
+    if [ -f "$f" ] && ! git check-ignore -q "$f"; then
+        LEAKED_FILES="$LEAKED_FILES $f"
+    fi
+done
+if [ -n "$LEAKED_FILES" ]; then
+    echo -e "${R}❌ 以下凭据文件未被 .gitignore 覆盖，推送后会泄露：${N}"
+    for f in $LEAKED_FILES; do echo -e "   ${R}$f${N}"; done
+    echo ""
+    echo "   处理办法：把它们加进 .gitignore（.env 已在默认模板中），"
+    echo "   或改用 .env.example 占位后重新运行本脚本。"
+    exit 1
+fi
+echo -e "   ${G}✓ 无凭据文件会被推送${N}"
 
 # 2. 初始化 git（如果还没初始化）
 if [ ! -d .git ]; then
@@ -156,6 +167,10 @@ echo "  5. 分享到 V2EX、即刻、Twitter、知乎—— '科技 × 玄学' �
 echo ""
 echo "  ─── 关于 API key ───"
 echo ""
-echo "  现在你的 DeepSeek API key 已经公开。建议：拿一份个人专用 key 自己用，"
-echo "  这个共享 key 听天由命（被滥用了就被 DeepSeek 自动作废，没什么损失）。"
+echo "  .env 已被 .gitignore 排除，不会进仓库——所以线上拿不到 key，需要单独配："
+echo "    · Vercel：项目 Settings → Environment Variables 里加 DEEPSEEK_API_KEY"
+echo "    · 自托管：在运行环境的 .env 里放 key，用 docker-compose 的 env_file 注入"
+echo ""
+echo "  如果你手里还留着旧的历史 key（曾误提交进仓库的那把），请去"
+echo "  https://platform.deepseek.com/api_keys 吊销它——历史提交视同已泄露。"
 echo ""

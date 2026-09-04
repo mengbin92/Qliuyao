@@ -12,8 +12,10 @@ __pycache__/
 .venv/
 venv/
 
-# 注意：本项目自带一个共享的 .env 文件（含演示用 API key），
-# 已"故意"不加入 .gitignore，让接收者开箱即用。
-# 如果你 fork 后要用自己的 key，建议把下行解开：
-# .env
+# API 凭据：.env 一律不入库，只发 .env.example 占位模板。
+# 仓库历史上曾误提交过真实 key，已在 2026-09-04 清理并轮换，勿再放开此行。
+.env
+.env.*
+!.env.example
+!.env.*.example
 .claude/
