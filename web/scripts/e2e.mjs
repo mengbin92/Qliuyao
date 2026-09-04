@@ -1,17 +1,15 @@
 /* 量子六爻 端到端验收脚本 — 桌面 + 移动
- * 运行: node scripts/e2e.cjs（需先启动 next start -p 3210）
- * 依赖: 优先使用项目内 playwright；未安装时回落到 micro-one-api 的共享安装
+ * 运行: npm run e2e（需先启动 next start -p 3210）
+ * 依赖: playwright（devDependencies 已声明；首次使用需 npx playwright install chromium）
+ *
+ * 为什么是 .mjs：项目 ESLint 开了 @typescript-eslint/no-require-imports，
+ * 用 require() 会直接让 lint 和 next build 双双失败。
  */
-let chromium;
-try {
-  ({ chromium } = require("playwright"));
-} catch {
-  ({ chromium } = require("/Users/neo/vscode/mengbin/micro-one-api/web/node_modules/playwright"));
-}
+import { chromium } from "playwright";
+import fs from "node:fs";
 
 const BASE = "http://localhost:3210";
 const SHOT = "/tmp/qliuyao-shots";
-const fs = require("fs");
 fs.mkdirSync(SHOT, { recursive: true });
 
 const issues = [];
