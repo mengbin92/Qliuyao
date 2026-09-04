@@ -56,12 +56,29 @@ async function checkPage(page, url, name) {
   await d.waitForTimeout(2500);
   await d.screenshot({ path: `${SHOT}/desktop-home-cast.png`, fullPage: true });
 
-  // AI 解卦在起卦后自动开始；本地无 DEEPSEEK_API_KEY，应优雅报错而非卡死
+  // AI 解卦在起卦后自动开始；本地无 DEEPSEEK_API_KEY，应优雅报错而非卡死。
+  // 有 key 时进一步校验新格式：标题改为「综合分析与建议」，第四段不少于 250 字。
   try {
     await d.waitForSelector("text=/解卦失败|解卦师正在落笔|重新解卦/", { timeout: 25000 });
     const interpretText = await d.locator("section", { hasText: "AI 解卦" }).first().textContent();
     const failed = /解卦失败/.test(interpretText);
     report(true, `desktop-home: AI 解卦区出现（${failed ? "无 Key 优雅报错，符合预期" : "有内容输出"}）`);
+    if (!failed) {
+      try {
+        await d.waitForSelector("text=/四、综合分析与建议/", { timeout: 60000 });
+        await d.waitForFunction(
+          () => !document.querySelector("section .animate-pulse"),
+          null,
+          { timeout: 60000 }
+        );
+        report(true, "desktop-home: AI 解卦完整产出四段");
+        const full = await d.locator("section", { hasText: "AI 解卦" }).first().textContent();
+        const seg = full.split("四、综合分析与建议")[1] || "";
+        report(seg.length >= 250, `desktop-home: 综合分析段长度=${seg.length} 字（≥250）`);
+      } catch {
+        report(false, "desktop-home: AI 解卦未在 60s 内产出「四、综合分析与建议」或未结束");
+      }
+    }
   } catch {
     report(false, "desktop-home: AI 解卦区 25s 内无反馈");
   }

@@ -67,7 +67,7 @@ export async function POST(req: Request) {
         { role: "user", content: userPrompt },
       ],
       temperature: 0.6,
-      max_tokens: 2400,
+      max_tokens: 3200,
       stream: true,
     }),
     signal: upstreamCtrl.signal,
