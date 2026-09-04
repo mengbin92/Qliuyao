@@ -11,8 +11,11 @@ services:
     env_file:
       - .env
     environment:
+      # 这里的 LLM_BASE_URL 指向宿主机上的 OpenAI 兼容服务（示例用）。
+      # 直连官方 API 时删掉这两行即可，会回落到代码里的 DeepSeek 默认值。
       LLM_BASE_URL: http://host.docker.internal:8080/v1
-      LLM_MODEL: deepseek-v4-pro-0813
+      # 与 ai_interpreter.py / web/src/app/api/interpret/route.ts 的默认模型保持一致
+      LLM_MODEL: deepseek-chat
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:

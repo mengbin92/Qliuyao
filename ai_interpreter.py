@@ -6,7 +6,7 @@ AI 解卦模块（v2）—— 把卦象、衍生卦、爻位结构、彖传大�
 默认走 DeepSeek API（OpenAI 兼容协议）。要换别的供应商，只需调整环境变量：
     LLM_API_KEY     —— API key（必填）
     LLM_BASE_URL    —— API endpoint，默认 https://api.deepseek.com/v1
-    LLM_MODEL       —— 模型名，默认 deepseek-v4-pro
+    LLM_MODEL       —— 模型名，默认 deepseek-chat
 
 为了**零额外依赖**，本模块只用 Python 标准库的 urllib，不引入 openai/requests。
 """
@@ -30,9 +30,11 @@ from liuyao import Yao
 # ───────────────────── 配置 ─────────────────────
 
 DEFAULT_BASE_URL = "https://api.deepseek.com/v1"
-# 默认走 V4 Pro：DeepSeek 顶配模型，对古文与解卦类任务效果最好。
+# 默认模型必须与 Web 端保持一致（web/src/app/api/interpret/route.ts 的
+# DEFAULT_MODEL），否则同一个卦在 CLI 和网页上会喂给不同的模型，
+# 解出来的内容质量与风格对不上。改一端就要改另一端。
 # 用户可以用 LLM_MODEL 环境变量覆盖。如果模型名变了，--list-models 可查可用列表。
-DEFAULT_MODEL = "deepseek-v4-pro"
+DEFAULT_MODEL = "deepseek-chat"
 DEFAULT_TIMEOUT_S = 120  # 加大超时：升级版 prompt 内容多，模型推理更久
 
 
