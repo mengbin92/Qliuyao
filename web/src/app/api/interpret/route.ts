@@ -36,9 +36,9 @@ export async function POST(req: Request) {
   const { question, yaos, benBin, bianBin } = body;
   if (question.length > 200) return Response.json({ error: "问题过长（≤200 字）" }, { status: 400 });
 
-  const apiKey = process.env.DEEPSEEK_API_KEY || process.env.LLM_API_KEY;
+  const apiKey = process.env.LLM_API_KEY || process.env.DEEPSEEK_API_KEY;
   if (!apiKey) {
-    return Response.json({ error: "服务端未配置 DEEPSEEK_API_KEY。请联系管理员或自行部署。" }, { status: 503 });
+    return Response.json({ error: "服务端未配置 LLM_API_KEY。请联系管理员或自行部署。" }, { status: 503 });
   }
   const baseUrl = (process.env.LLM_BASE_URL || "https://api.deepseek.com/v1").replace(/\/$/, "");
   const model = process.env.LLM_MODEL || "deepseek-chat";

@@ -108,14 +108,63 @@ test("invalid request shapes and inconsistent hexagrams return JSON 400", async 
   assert.equal((await POST(new Request("http://localhost/api/interpret", { method: "POST", body: "{" }))).status, 400);
 });
 
-function fakeKey(t) {
-  const previous = process.env.DEEPSEEK_API_KEY;
-  process.env.DEEPSEEK_API_KEY = "local-test-only";
+function setEnv(t, updates) {
+  const previous = Object.fromEntries(Object.keys(updates).map((key) => [key, process.env[key]]));
+  for (const [key, value] of Object.entries(updates)) {
+    if (value === undefined) delete process.env[key];
+    else process.env[key] = value;
+  }
   t.after(() => {
-    if (previous === undefined) delete process.env.DEEPSEEK_API_KEY;
-    else process.env.DEEPSEEK_API_KEY = previous;
+    for (const [key, value] of Object.entries(previous)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
   });
 }
+
+function fakeKey(t) {
+  setEnv(t, { LLM_API_KEY: "local-test-only", DEEPSEEK_API_KEY: undefined });
+}
+
+test("missing credentials report the provider-neutral setting", async (t) => {
+  setEnv(t, { LLM_API_KEY: undefined, DEEPSEEK_API_KEY: undefined });
+  const fetchMock = t.mock.method(globalThis, "fetch", () => { throw new Error("unexpected upstream request"); });
+  let response = await POST(request());
+  assert.equal(response.status, 503);
+  assert.match((await response.json()).error, /LLM_API_KEY/);
+  process.env.LLM_API_KEY = "";
+  process.env.DEEPSEEK_API_KEY = "";
+  response = await POST(request());
+  assert.equal(response.status, 503);
+  assert.equal(fetchMock.mock.callCount(), 0);
+});
+
+test("LLM_API_KEY is preferred while the legacy DeepSeek key remains supported", async (t) => {
+  setEnv(t, {
+    LLM_API_KEY: "generic-key", DEEPSEEK_API_KEY: "legacy-key",
+    LLM_BASE_URL: "https://provider.example/v1/", LLM_MODEL: "provider-model",
+  });
+  let authorization;
+  t.mock.method(globalThis, "fetch", async (url, { headers, body }) => {
+    assert.equal(url, "https://provider.example/v1/chat/completions");
+    assert.equal(JSON.parse(body).model, "provider-model");
+    authorization = headers.Authorization;
+    return new Response(streamOf("data: [DONE]\n\n"));
+  });
+  let response = await POST(request());
+  assert.deepEqual(await collect(response.body), ["[DONE]"]);
+  assert.equal(authorization, "Bearer generic-key");
+
+  delete process.env.LLM_API_KEY;
+  response = await POST(request());
+  assert.deepEqual(await collect(response.body), ["[DONE]"]);
+  assert.equal(authorization, "Bearer legacy-key");
+
+  process.env.LLM_API_KEY = "";
+  response = await POST(request());
+  assert.deepEqual(await collect(response.body), ["[DONE]"]);
+  assert.equal(authorization, "Bearer legacy-key");
+});
 
 test("upstream connection failure returns a retryable JSON 502", async (t) => {
   fakeKey(t);

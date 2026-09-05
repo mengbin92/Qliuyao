@@ -6,7 +6,7 @@
 
 [![Python](https://img.shields.io/badge/Python-3.10--3.14-3776AB?logo=python&logoColor=white)](https://www.python.org)
 [![pyqpanda3](https://img.shields.io/badge/quantum-pyqpanda3-7B61FF)](https://pypi.org/project/pyqpanda3/)
-[![DeepSeek](https://img.shields.io/badge/AI-DeepSeek_V4_Pro-00D4FF)](https://platform.deepseek.com)
+[![LLM](https://img.shields.io/badge/AI-OpenAI--compatible-00D4FF)](.env.example)
 [![License](https://img.shields.io/badge/license-MIT-yellow)](LICENSE)
 [![Made with](https://img.shields.io/badge/made_with-☯-d4a017)](#)
 
@@ -29,7 +29,7 @@
 
 部署在 Vercel Edge Runtime，全球访问；想自部署可以一键：
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FKeith9922%2FQliuyao&root-directory=web&env=DEEPSEEK_API_KEY)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FKeith9922%2FQliuyao&root-directory=web&env=LLM_API_KEY)
 
 源码在 [`web/`](web/) 子目录，部署细节见 [web/README.md](web/README.md)。
 
@@ -99,8 +99,7 @@ pip install -r requirements.txt
 python main.py
 ```
 
-> 📌 项目自带共享 DeepSeek API key，**开箱即用**。
-> 想换自己的 key？编辑 `.env`。详见 [关于自带的 API key](#关于自带的-api-key)。
+> 📌 AI 解卦需要配置一个 OpenAI 兼容模型服务。复制 `.env.example` 为 `.env`，详见下方详细文档中的「配置大模型」。
 
 ---
 
@@ -178,7 +177,7 @@ flowchart LR
   KB --> W[彖传 / 大象传]
   KB --> D[互卦 / 错卦 / 综卦]
   KB --> P[当位 / 应位 / 承乘]
-  H & W & D & P --> AI[DeepSeek V4 Pro]
+  H & W & D & P --> AI[OpenAI 兼容大模型]
   AI --> R[白话解读]
 
   style Q fill:#ffd966,color:#000
@@ -209,9 +208,9 @@ flowchart LR
 |---|---|
 | 🌌 **真量子电路** | pyqpanda3 三比特 Hadamard 叠加，每爻独立一次电路实例 + 单 shot 测量 |
 | 📚 **完整易学知识库** | 64 卦卦辞爻辞 + 64 卦彖传 + 64 卦大象传 + 互错综衍生卦 + 八卦象意 |
-| 🤖 **AI 解卦** | DeepSeek V4 Pro，强结构化 prompt，6 步推理强制引用原文 |
+| 🤖 **AI 解卦** | 支持 OpenAI 兼容大模型，强结构化 prompt，6 步推理强制引用原文 |
 | 🔬 **可证伪** | 自带 χ² 卡方检验工具，跑 10000 次给你看分布是不是真符合 1/8 |
-| 🎁 **开箱即用** | 自带共享 API key，一行 `python main.py` 就能体验 |
+| 🔌 **模型可配置** | 用统一环境变量切换任意 OpenAI 兼容模型服务 |
 | 📦 **零额外依赖** | AI 模块只用 Python 标准库 urllib，没引入 openai/requests |
 
 ---
@@ -252,7 +251,7 @@ python main.py                              # 交互式：先问问题，再起�
 python main.py -q "今年适合换工作吗？"      # 直接传问题
 python main.py --no-ai                      # 不调 AI，只摇卦看古文
 python main.py --classical                  # 不用量子，纯经典随机
-python main.py --list-models                # 看 DeepSeek 账号下能用的模型 ID
+python main.py --list-models                # 看当前模型服务账号下可用的模型 ID
 
 python verify_quantum.py 10000              # 量子电路统计验证
 python check_project.py                     # 项目数学逻辑自检
@@ -277,11 +276,11 @@ Qliuyao/
 ├── trigrams.py             八卦象意（天/地/雷/风/水/火/山/泽 + 卦德）
 ├── gua_analysis.py         互卦/错卦/综卦 + 当位/应位/承乘
 │
-├── ai_interpreter.py       DeepSeek 解卦（OpenAI 兼容协议，零依赖）
+├── ai_interpreter.py       AI 解卦（OpenAI 兼容协议，零依赖）
 │
 ├── assets/                 图标和示意图（SVG）
 ├── setup.sh / setup.bat    一键安装脚本
-├── .env                    自带共享 API key
+├── .env                    本地模型配置（自行创建，不提交 Git）
 ├── .env.example            配置模板
 ├── .gitignore
 ├── requirements.txt        仅一行：pyqpanda3>=0.3.5
@@ -392,7 +391,7 @@ python verify_quantum.py 1000
 - macOS < 13.0
 
 **AI 解卦报 HTTP 401**
-- API key 不对或额度耗尽。自己注册新 key 后改 `.env`：https://platform.deepseek.com
+- API key 不对或额度耗尽。请从所用模型服务商获取有效 key，并更新 `.env` 中的 `LLM_API_KEY`
 
 **AI 解卦报 HTTP 400 / model not found**
 - 模型 ID 跟实际不一致。`python main.py --list-models` 看一下，把准确名字写到 `.env` 的 `LLM_MODEL=...`
@@ -403,29 +402,29 @@ python verify_quantum.py 1000
 </details>
 
 <details>
-<summary><b>🎁 关于自带的 API key（点击展开）</b></summary>
+<summary><b>🔌 配置大模型（点击展开）</b></summary>
 
-`.env` 里的 DeepSeek API key 是项目作者主动共享的，你**直接拿来用**就行，不需要自己注册。
+首次配置时复制模板（已有 `.env` 则直接编辑）：
 
-但要注意：
-
-- 共享 key 的额度是**所有使用者共用**的，烧完就没了
-- 共享 key 任何时候可能被作废或更换
-- 长期使用建议自己注册：https://platform.deepseek.com （免费注册，新用户有 1 元体验额度，够算 1000 卦）
-
-要换成自己的 key，编辑 `.env`：
-
-```
-DEEPSEEK_API_KEY=sk-换成你自己的
+```bash
+cp .env.example .env
 ```
 
-想换其他 OpenAI 兼容服务（Kimi / 通义 / 本地 Ollama）：
+在 `.env` 文件中填写模型服务商提供的 API key：
 
+```dotenv
+LLM_API_KEY=你的-api-key
 ```
+
+默认端点为 `https://api.deepseek.com/v1`，模型为 `deepseek-chat`。要切换到其他 OpenAI 兼容服务（Kimi / 通义 / 本地 Ollama 等），在 `.env` 中同时设置以下三项：
+
+```dotenv
+LLM_API_KEY=你的-api-key
 LLM_BASE_URL=https://你的服务.com/v1
 LLM_MODEL=你的模型名
-DEEPSEEK_API_KEY=你的 key  # 变量名保留
 ```
+
+旧版的 `DEEPSEEK_API_KEY` 仍可作为兼容回退，但新配置请统一使用 `LLM_API_KEY`；两者均非空时以 `LLM_API_KEY` 为准。模板中的密钥留空，未配置时仅跳过 AI 解卦。不要将包含真实密钥的配置文件提交到 Git。
 
 </details>
 
@@ -448,7 +447,7 @@ DEEPSEEK_API_KEY=你的 key  # 变量名保留
 - **邵雍** (1011–1077) —— "伏羲六十四卦次序图"作者，为二进制 8 卦排序奠定基础。
 - **戈特弗里德·莱布尼茨** (1646–1716) —— 二进制发明人。1703 年读到邵雍图后写下《二进制算术的解释》。
 - **本源量子（OriginQ）** —— pyqpanda3 SDK 提供方。中国本土量子计算公司。
-- **DeepSeek** —— 提供 V4 Pro 大模型 API。
+- **OpenAI 兼容大模型服务** —— 为结构化解读提供模型 API；默认配置使用 DeepSeek。
 - **朱熹《周易本义》** —— 主要参考的经学注本，断卦法采用其《易学启蒙·考变占法》规则。
 
 ---

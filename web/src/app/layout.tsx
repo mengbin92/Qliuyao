@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     template: "%s · 量子六爻",
   },
   description:
-    "把铜钱换成量子比特，让 AI 替你解卦。基于本源量子 pyqpanda3 的 H 门叠加 + 单 shot 测量起卦，DeepSeek V4 Pro 配合《周易》经学知识库做白话解读。",
+    "把铜钱换成量子比特，让 AI 替你解卦。基于本源量子 pyqpanda3 的 H 门叠加 + 单 shot 测量起卦，OpenAI 兼容大模型配合《周易》经学知识库做白话解读。",
   keywords: [
     "易经",
     "周易",
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     "I-Ching",
     "Liuyao",
     "Hadamard",
-    "DeepSeek",
+    "大语言模型",
     "AI 解卦",
   ],
   authors: [{ name: "Qliuyao" }],

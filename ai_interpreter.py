@@ -3,7 +3,7 @@
 AI 解卦模块（v2）—— 把卦象、衍生卦、爻位结构、彖传大象都整合进 prompt，
 强制大模型按"易学方法论 + 引用原文"的方式做结构化推理，而不是泛泛抒情。
 
-默认走 DeepSeek API（OpenAI 兼容协议）。要换别的供应商，只需调整环境变量：
+通过 OpenAI 兼容协议调用大模型，默认使用 DeepSeek。可通过以下环境变量切换供应商：
     LLM_API_KEY     —— API key（必填）
     LLM_BASE_URL    —— API endpoint，默认 https://api.deepseek.com/v1
     LLM_MODEL       —— 模型名，默认 deepseek-chat
@@ -30,8 +30,8 @@ from liuyao import Yao
 # ───────────────────── 配置 ─────────────────────
 
 DEFAULT_BASE_URL = "https://api.deepseek.com/v1"
-# 默认模型必须与 Web 端保持一致（web/src/app/api/interpret/route.ts 的
-# DEFAULT_MODEL），否则同一个卦在 CLI 和网页上会喂给不同的模型，
+# 默认模型必须与 Web 端保持一致（web/src/app/api/interpret/route.ts），
+# 否则同一个卦在 CLI 和网页上会喂给不同的模型，
 # 解出来的内容质量与风格对不上。改一端就要改另一端。
 # 用户可以用 LLM_MODEL 环境变量覆盖。如果模型名变了，--list-models 可查可用列表。
 DEFAULT_MODEL = "deepseek-chat"
@@ -322,9 +322,10 @@ def interpret(
     if not api_key:
         raise RuntimeError(
             "未检测到 API key。\n"
-            "  请先获取 DeepSeek API key（https://platform.deepseek.com/api_keys ），\n"
+            "  请从所用模型服务商获取 API key，\n"
             "  然后在 .env 文件里设置：\n"
-            "    DEEPSEEK_API_KEY=sk-...\n"
+            "    LLM_API_KEY=你的 API key\n"
+            "  使用其他模型服务时，还需设置 LLM_BASE_URL 和 LLM_MODEL。\n"
             "  再重新运行。"
         )
 
@@ -368,7 +369,7 @@ def interpret(
         raise RuntimeError(
             f"无法连接到 AI 接口：{e.reason}\n"
             f"  端点：{url}\n"
-            "  请检查网络（或代理）。如果你在国内访问 DeepSeek 官方接口，一般无需代理。"
+            "  请检查 LLM_BASE_URL、网络连接或代理配置。"
         ) from e
     except Exception as e:  # pragma: no cover
         raise RuntimeError(f"调用 AI 时发生未预期错误：{e!r}") from e
@@ -387,7 +388,7 @@ def list_models(base_url: Optional[str] = None, timeout: int = 30) -> List[str]:
     """调用 /v1/models 端点拿到当前账号可用的模型 ID 列表。"""
     api_key = _read_api_key()
     if not api_key:
-        raise RuntimeError("未检测到 API key，无法查询模型列表。")
+        raise RuntimeError("未配置 LLM_API_KEY，无法查询模型列表。")
     base = (base_url or os.environ.get("LLM_BASE_URL") or DEFAULT_BASE_URL).rstrip("/")
     url = f"{base}/models"
     req = urllib.request.Request(

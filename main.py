@@ -6,13 +6,14 @@
     1. 让用户输入心中所问之事
     2. 用本源量子 pyqpanda3 起六爻
     3. 打印卦象 + 卦辞 + 爻辞
-    4. 调用大模型（默认 DeepSeek）结合问题给出白话解读
+    4. 调用 OpenAI 兼容大模型（默认 DeepSeek）结合问题给出白话解读
        —— 没有 API key 时跳过这一步，只打印卦象，让你自己悟
 
 直接在 PyCharm 里右键 → Run 'main' 即可。
 """
 
 import argparse
+import os
 import sys
 from typing import List, Optional
 
@@ -137,12 +138,13 @@ def print_ai_interpretation(question: str, yaos, ben_bin: str, bian_bin: str) ->
         print("⚠️  未检测到 API key，跳过 AI 解卦。")
         print()
         print("    要打开 AI 解卦：")
-        print("      1. 去 https://platform.deepseek.com/api_keys 注册并申请 key")
+        print("      1. 从所用模型服务商获取 API key")
         print("      2. 在 shell 设置环境变量：")
-        print("           export DEEPSEEK_API_KEY='sk-...'")
+        print("           export LLM_API_KEY='你的 API key'")
         print("      3. 重新运行本程序")
         print()
-        print("    或者在 PyCharm 的 Run Configuration → Environment variables 里加 DEEPSEEK_API_KEY。")
+        print("    或者在 PyCharm 的 Run Configuration → Environment variables 里加 LLM_API_KEY。")
+        print("    默认使用 DeepSeek；使用其他服务时，还需设置 LLM_BASE_URL 和 LLM_MODEL。")
         return
 
     print(f"问题：{question}")
@@ -196,7 +198,7 @@ def main() -> None:
     parser.add_argument(
         "--list-models",
         action="store_true",
-        help="列出当前 API key 可用的模型 ID 然后退出（核对 V4 Pro 准确名字时用）",
+        help="列出当前模型服务可用的模型 ID 然后退出（用于配置 LLM_MODEL）",
     )
     args = parser.parse_args()
 
@@ -208,8 +210,9 @@ def main() -> None:
             print(f"❌ {e}")
             sys.exit(1)
         print("可用模型 ID：")
+        current_model = os.environ.get("LLM_MODEL") or ai_interpreter.DEFAULT_MODEL
         for m in models:
-            mark = "  ← 当前默认" if m == ai_interpreter.DEFAULT_MODEL else ""
+            mark = "  ← 当前使用" if m == current_model else ""
             print(f"  - {m}{mark}")
         return
 

@@ -46,8 +46,8 @@ function FeatureGrid() {
     {
       Icon: Sparkles,
       title: "AI 结构化解卦",
-      desc: "DeepSeek + 强结构化 prompt：辨象 → 取辞 → 观结构 → 看动向 → 参互错综 → 综合，每步引用原文。",
-      tag: "DEEPSEEK",
+      desc: "OpenAI 兼容大模型 + 强结构化 prompt：辨象 → 取辞 → 观结构 → 看动向 → 参互错综 → 综合，每步引用原文。",
+      tag: "LLM",
       tone: "gold" as const,
     },
     {

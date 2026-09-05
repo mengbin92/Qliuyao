@@ -20,16 +20,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-------------------------------------------------------------------------------
-
-NOTE on the bundled DeepSeek API key in `.env`:
-
-This repository ships with a demo DeepSeek API key in `.env` so anyone can
-try the project out of the box. The key is shared at the author's own risk
-and quota; it may run out, be rotated, or be revoked at any time without
-notice. For long-term or production use, please register your own key at
-https://platform.deepseek.com and replace the value in `.env`.
-
 NOTE on the I Ching content:
 
 The hexagram judgments, line texts, Tuan-zhuan and Da Xiang-zhuan included

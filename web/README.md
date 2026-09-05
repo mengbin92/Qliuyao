@@ -8,7 +8,7 @@
 
 - **Next.js 15** App Router + TypeScript（Edge Runtime）
 - **Tailwind CSS** + Framer Motion 做古典 + 量子风格的视觉
-- **DeepSeek API** 通过 SSE 流式返回解卦
+- **OpenAI 兼容大模型 API** 通过 SSE 流式返回解卦
 - **TypeScript 复刻量子电路逻辑**（`src/lib/quantum.ts`），数学等价于 pyqpanda3 H⊗H⊗H + 单 shot 测量
 
 ## 目录结构
@@ -63,7 +63,7 @@ web/
 cd web
 npm install
 cp .env.example .env.local
-# 编辑 .env.local，填入你的 DeepSeek API key
+# 编辑 .env.local，填写 LLM_API_KEY；使用其他服务时同时填写 LLM_BASE_URL 和 LLM_MODEL
 
 npm run dev
 # 打开 http://localhost:3000
@@ -73,7 +73,9 @@ npm run dev
 
 ### 一键部署
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FKeith9922%2FQliuyao&root-directory=web&env=DEEPSEEK_API_KEY&envDescription=DeepSeek%20API%20Key%20for%20AI%20interpretation&envLink=https%3A%2F%2Fplatform.deepseek.com%2Fapi_keys)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FKeith9922%2FQliuyao&root-directory=web&env=LLM_API_KEY&envDescription=API%20key%20for%20an%20OpenAI-compatible%20LLM)
+
+一键部署默认使用 DeepSeek。使用其他服务时，在项目 Environment Variables 中同时配置 `LLM_BASE_URL` 和 `LLM_MODEL`，重新部署后再使用 AI 解卦。
 
 ### 手动部署
 
@@ -81,7 +83,7 @@ npm run dev
 2. **Root Directory** 设为 `web`
 3. **Framework Preset** 自动识别为 Next.js
 4. **Environment Variables** 添加：
-   - `DEEPSEEK_API_KEY` = `sk-...`（必需）
+   - `LLM_API_KEY` = 模型服务商提供的 API key（必需）
    - `LLM_BASE_URL`（可选，默认 `https://api.deepseek.com/v1`）
    - `LLM_MODEL`（可选，默认 `deepseek-chat`）
 5. **Deploy**
@@ -90,19 +92,21 @@ npm run dev
 
 ### 切到其他 OpenAI 兼容服务
 
-环境变量改一改即可：
+编辑本地的 `.env.local`，或在部署平台配置以下环境变量，然后重启服务或重新部署。三个参数必须属于同一个模型服务：
 
-```bash
+```dotenv
 LLM_BASE_URL=https://api.moonshot.cn/v1   # Kimi
 LLM_MODEL=moonshot-v1-32k
-DEEPSEEK_API_KEY=sk-...                   # 变量名保留
+LLM_API_KEY=sk-...
 ```
 
-```bash
+```dotenv
 LLM_BASE_URL=http://localhost:11434/v1    # 本地 Ollama
 LLM_MODEL=qwen2.5:7b
-DEEPSEEK_API_KEY=ollama
+LLM_API_KEY=ollama
 ```
+
+旧版 `DEEPSEEK_API_KEY` 仍可作为回退；`LLM_API_KEY` 非空时优先使用它。模板中的密钥留空，未填写时 AI 解卦接口返回 503。
 
 ## 量子电路移植说明
 
@@ -125,13 +129,15 @@ MIT，跟主项目一致。
 The repository now includes a root-level production Dockerfile and Compose file for the web app.
 
 ```bash
-cp web/.env.example .env
-# Set DEEPSEEK_API_KEY in .env.
+cp web/.env.example .env  # First-time setup only; edit an existing .env in place.
+# Set LLM_API_KEY in .env.
 
 docker compose up -d --build
 ```
 
-The default Compose file publishes the web app on host port `3002`. `LLM_BASE_URL` and `LLM_MODEL` can be overridden in the environment or `.env`; the bundled example targets an OpenAI-compatible service on the Docker host.
+The Compose file publishes the web app on host port `3002`. Set `LLM_API_KEY`, `LLM_BASE_URL`, and `LLM_MODEL` in the root `.env`; shell variables take precedence over the same names in `.env`. The legacy `DEEPSEEK_API_KEY` is still supported. The default endpoint and model match the CLI and Web defaults: `https://api.deepseek.com/v1` and `deepseek-chat`.
+
+To connect to a model service running on the Docker host, explicitly set `LLM_BASE_URL` (for example, `http://host.docker.internal:11434/v1` for Ollama), `LLM_MODEL`, and `LLM_API_KEY` in `.env`. Do not use `localhost` for the host service from inside the container. The host alias is already configured:
 
 ```yaml
 extra_hosts:

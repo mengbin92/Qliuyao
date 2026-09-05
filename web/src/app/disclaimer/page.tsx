@@ -41,7 +41,7 @@ export default function DisclaimerPage() {
             <h2>1. 这是一个跨界文化实验</h2>
             <p>
               量子六爻把传统六爻卦法的「三铜钱」换成了三比特 Hadamard 量子电路，
-              再用 AI（DeepSeek）配合《周易》经文与十翼传注做一段白话推演。
+              再用 AI 配合《周易》经文与十翼传注做一段白话推演。
               它的初衷是：
             </p>
             <ul>
@@ -96,7 +96,7 @@ export default function DisclaimerPage() {
           <section>
             <h2>5. 数据与隐私</h2>
             <p>
-              你输入的问题会作为 prompt 一部分发送给 AI 接口（默认 DeepSeek），用于生成解读。
+              你输入的问题会作为 prompt 一部分发送给部署者配置的 AI 接口，用于生成解读。
               本站不会持久化保存你的提问记录；但请避免输入<strong>身份证号、银行账号、密码、商业秘密</strong>
               等敏感信息。
             </p>

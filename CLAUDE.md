@@ -135,7 +135,7 @@ git merge → dev 分支（不直接合 main）
 
 ## 八、当前项目结构提示
 
-- **`/`**（仓库根）：原版 Python CLI 项目（pyqpanda3 起卦 + DeepSeek 解卦）
+- **`/`**（仓库根）：原版 Python CLI 项目（pyqpanda3 起卦 + OpenAI 兼容大模型解卦）
 - **`/web`**：Next.js 15 网页版（部署到 Vercel），所有前端 + 流式 API 在此
 - **`main`**：生产分支
 - **`dev`**：集成分支（PR 合并目标）
@@ -147,7 +147,7 @@ git merge → dev 分支（不直接合 main）
 
 - CLI 已登录账号：`keith9922`
 - 项目根目录：`web`
-- 必填环境变量：`DEEPSEEK_API_KEY`
+- 必填环境变量：`LLM_API_KEY`（兼容旧版 `DEEPSEEK_API_KEY`）
 - 可选：`LLM_BASE_URL`、`LLM_MODEL`
 
 部署是**对外可见**的不可逆操作 → **必须通过 PJR 全部通过后再 deploy**。

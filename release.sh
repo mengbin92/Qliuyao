@@ -86,9 +86,9 @@ else
 特性：
 - 真量子电路（pyqpanda3 三比特 Hadamard + 单 shot 测量）
 - 完整易学知识库（64 卦 + 彖传 + 大象传 + 互错综 + 当位应承）
-- DeepSeek V4 Pro 强结构化解卦（6 步推理 + few-shot）
+- OpenAI 兼容大模型强结构化解卦（6 步推理 + few-shot）
 - 卡方检验工具自带证伪机制
-- 一键安装脚本 + 共享 API key 开箱即用
+- 一键安装脚本 + 统一环境变量配置模型服务
 
 灵感：莱布尼茨遇见易经 + 薛定谔的卦"
 fi
@@ -106,7 +106,7 @@ if command -v gh &>/dev/null && gh auth status &>/dev/null; then
         git push -u origin $DEFAULT_BRANCH
     else
         gh repo create "${REPO_NAME}" --public --source=. --remote=origin --push \
-            --description "把铜钱换成量子比特，让 AI 替你解卦。Quantum I Ching divination with pyqpanda3 + DeepSeek." \
+            --description "把铜钱换成量子比特，让 AI 替你解卦。Quantum I Ching divination with pyqpanda3 + OpenAI-compatible LLMs." \
             --homepage "https://github.com/${GITHUB_USER}/${REPO_NAME}"
     fi
 
@@ -117,7 +117,6 @@ if command -v gh &>/dev/null && gh auth status &>/dev/null; then
         --add-topic i-ching \
         --add-topic iching \
         --add-topic divination \
-        --add-topic deepseek \
         --add-topic pyqpanda3 \
         --add-topic chinese-philosophy \
         --add-topic for-fun \
@@ -168,7 +167,7 @@ echo ""
 echo "  ─── 关于 API key ───"
 echo ""
 echo "  .env 已被 .gitignore 排除，不会进仓库——所以线上拿不到 key，需要单独配："
-echo "    · Vercel：项目 Settings → Environment Variables 里加 DEEPSEEK_API_KEY"
+echo "    · Vercel：项目 Settings → Environment Variables 里加 LLM_API_KEY"
 echo "    · 自托管：在运行环境的 .env 里放 key，用 docker-compose 的 env_file 注入"
 echo ""
 echo "  如果你手里还留着旧的历史 key（曾误提交进仓库的那把），请去"

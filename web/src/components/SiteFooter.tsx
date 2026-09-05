@@ -49,16 +49,6 @@ export function SiteFooter() {
               </li>
               <li>
                 <a
-                  href="https://platform.deepseek.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex min-h-11 items-center text-ink-200 hover:text-gold-200"
-                >
-                  DeepSeek 平台
-                </a>
-              </li>
-              <li>
-                <a
                   href="https://pypi.org/project/pyqpanda3/"
                   target="_blank"
                   rel="noopener noreferrer"

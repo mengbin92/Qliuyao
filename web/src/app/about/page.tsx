@@ -87,7 +87,7 @@ export default function AboutPage() {
             <li><strong>邵雍 (1011–1077)</strong> —— 「伏羲六十四卦次序图」作者。</li>
             <li><strong>戈特弗里德·莱布尼茨 (1646–1716)</strong> —— 二进制发明人。</li>
             <li><strong>本源量子（OriginQ）</strong> —— pyqpanda3 SDK。</li>
-            <li><strong>DeepSeek</strong> —— 大模型 API。</li>
+            <li><strong>OpenAI 兼容大模型服务</strong> —— 为结构化解读提供模型 API；默认配置使用 DeepSeek。</li>
             <li><strong>朱熹《周易本义》</strong> —— 主要参考的经学注本。</li>
           </ul>
         </section>
