@@ -201,7 +201,7 @@ export function Interpretation({ question, yaos, benBin, bianBin, autoStart = tr
             {running ? "解卦师正在落笔" : done ? "解读已完成" : status === "stopped" ? "已中止，可重新解读" : status === "error" ? "解读暂未完成" : "等待开始解读"}
           </p>
           <p className="mt-1 text-xs text-ink-300">
-            DeepSeek + 周易·十翼 经学知识库 · 朱子断卦法
+            AI 大模型 + 周易·十翼 经学知识库 · 朱子断卦法
           </p>
         </div>
         {!running && (

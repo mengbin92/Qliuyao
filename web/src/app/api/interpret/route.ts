@@ -60,7 +60,8 @@ export async function POST(req: Request) {
           { role: "user", content: buildUserPrompt(question, yaos, benBin, bianBin) },
         ],
         temperature: 0.6,
-        max_tokens: 3200,
+        // 推理模型（如 glm-5.3）的 reasoning 会消耗输出预算，3200 容易被思考过程占满导致正文为空
+        max_tokens: 8192,
         stream: true,
       }),
       signal: upstreamCtrl.signal,
